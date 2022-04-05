@@ -9,13 +9,16 @@ import java.util.List;
 
 @Data
 @Document
-public class Item {
+public class BuyInfo {
     @Id
-    @Indexed
-    private final String itemName;
-    private final List<Price> priceHistory;
+    private String id;
+    private String itemName;
+    private int amount;
+    private double buyPrice;
 
-    public void addPrice(final Price price) {
-        priceHistory.add(price);
+    public BuyInfo(String itemName, int amount, double buyPrice) {
+        this.itemName = itemName;
+        this.amount = amount;
+        this.buyPrice = buyPrice;
     }
 }
