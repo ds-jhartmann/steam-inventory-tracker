@@ -1,7 +1,10 @@
-package com.hinderegger.steaminventorytracker;
+package com.hinderegger.steaminventorytracker.controller;
 
 import com.hinderegger.steaminventorytracker.model.BuyInfo;
 import com.hinderegger.steaminventorytracker.model.Item;
+import com.hinderegger.steaminventorytracker.service.BuyInfoService;
+import com.hinderegger.steaminventorytracker.service.ItemService;
+import com.hinderegger.steaminventorytracker.service.SteamInventoryTrackerService;
 import lombok.AllArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
@@ -29,8 +32,8 @@ public class SteamInventoryTrackerController {
     @PostMapping(path = "/registerBuyInfo")
     public @ResponseStatus
     BuyInfo registerBuyInfo(@RequestParam String name,
-                    @RequestParam Integer amount,
-                    @RequestParam Double buyPrice) {
+                            @RequestParam Integer amount,
+                            @RequestParam Double buyPrice) {
         final BuyInfo item = new BuyInfo(name, amount, buyPrice);
 
         return buyInfoService.addBuyInfo(item);

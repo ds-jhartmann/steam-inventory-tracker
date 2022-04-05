@@ -1,4 +1,4 @@
-package com.hinderegger.steaminventorytracker;
+package com.hinderegger.steaminventorytracker.repository;
 
 import com.hinderegger.steaminventorytracker.model.BuyInfo;
 import org.springframework.data.mongodb.repository.MongoRepository;

@@ -1,5 +1,6 @@
-package com.hinderegger.steaminventorytracker;
+package com.hinderegger.steaminventorytracker.service;
 
+import com.hinderegger.steaminventorytracker.repository.ItemRepository;
 import com.hinderegger.steaminventorytracker.model.Item;
 import com.hinderegger.steaminventorytracker.model.Price;
 import lombok.AllArgsConstructor;

@@ -1,14 +1,11 @@
-package com.hinderegger.steaminventorytracker;
+package com.hinderegger.steaminventorytracker.service;
 
+import com.hinderegger.steaminventorytracker.repository.BuyInfoRepository;
 import com.hinderegger.steaminventorytracker.model.BuyInfo;
-import com.hinderegger.steaminventorytracker.model.Item;
-import com.hinderegger.steaminventorytracker.model.Price;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 @AllArgsConstructor
@@ -19,8 +16,6 @@ public class BuyInfoService {
     public BuyInfo addBuyInfo(BuyInfo buyInfo) {
         return buyInfoRepository.insert(buyInfo);
     }
-
-
 
     public List<BuyInfo> getBuyInfoByName(String name) {
         final List<BuyInfo> itemByName = buyInfoRepository.findAllByItemName(name);

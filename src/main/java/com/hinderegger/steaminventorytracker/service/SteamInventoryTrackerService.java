@@ -1,5 +1,6 @@
-package com.hinderegger.steaminventorytracker;
+package com.hinderegger.steaminventorytracker.service;
 
+import com.hinderegger.steaminventorytracker.repository.ItemRepository;
 import com.hinderegger.steaminventorytracker.model.Item;
 import com.hinderegger.steaminventorytracker.model.Price;
 import lombok.extern.slf4j.Slf4j;
@@ -8,22 +9,26 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.List;
 
 @Service
 @Slf4j
 public class SteamInventoryTrackerService {
     private final ItemRepository itemRepository;
-    private final SteamMarketAPICaller steamMarketAPICaller;
+    private final SteamMarketAPICallerService steamMarketAPICallerService;
 
-    public SteamInventoryTrackerService(ItemRepository itemRepository, SteamMarketAPICaller steamMarketAPICaller) {
+    public SteamInventoryTrackerService(ItemRepository itemRepository, SteamMarketAPICallerService steamMarketAPICallerService) {
         this.itemRepository = itemRepository;
-        this.steamMarketAPICaller = steamMarketAPICaller;
+        this.steamMarketAPICallerService = steamMarketAPICallerService;
     }
 
     public void requestItems() {
         final List<Item> all = itemRepository.findAll();
+        Collections.shuffle(all);
+        final long started = System.currentTimeMillis();
         all.forEach(this::requestItem);
+        log.info("Elapsed time in seconds: " + (System.currentTimeMillis() - started) / 1000d);
     }
 
     private void requestItem(Item item) {
@@ -40,17 +45,11 @@ public class SteamInventoryTrackerService {
             itemRepository.save(item);
         }, error -> {
             log.error("Could not get price");
-            throw new IllegalStateException("error while accessing SteamAPI for item: " + item.getItemName());
+            throw new IllegalStateException("error while retrieving value for item: " + item.getItemName());
         }, () -> log.info("Mono consumed."));
-
     }
 
     private Mono<String> callSteamAPI(Item item) {
-//        try {
-        return steamMarketAPICaller.getPriceForItem(item);
-//        } catch (InterruptedException | TimeoutException e) {
-//            log.error(e.getMessage());
-//        }
-//        return null;
+        return steamMarketAPICallerService.getPriceForItem(item);
     }
 }
