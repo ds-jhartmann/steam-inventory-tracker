@@ -84,7 +84,7 @@ public class SteamInventoryTrackerController {
     @GetMapping(path = "/startSteamMarketRequest")
     public @ResponseBody
     String startSteamMarketQuery() {
-        steamInventoryTrackerService.requestItems();
+        steamInventoryTrackerService.requestItemsSync();
         return "Successful";
     }
 }

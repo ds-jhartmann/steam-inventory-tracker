@@ -14,9 +14,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 @SpringBootApplication
 public class SteamInventoryTrackerApplication {
-    public static final String PATH = "/market/priceoverview/?appid=730&currency=3&market_hash_name=";
+    public static final String PATH = "appid=730&currency=3&market_hash_name=";
     public static final AtomicInteger COUNTER = new AtomicInteger(0);
-    private static final String BASEURL = "https://steamcommunity.com";
+    public static final String BASEURL = "https://steamcommunity.com/market/priceoverview/?";
 
     public static void main(String[] args) {
         SpringApplication.run(SteamInventoryTrackerApplication.class, args);

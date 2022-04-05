@@ -1,16 +1,25 @@
 package com.hinderegger.steaminventorytracker.service;
 
-import com.hinderegger.steaminventorytracker.repository.ItemRepository;
+import com.hinderegger.steaminventorytracker.SteamInventoryTrackerApplication;
 import com.hinderegger.steaminventorytracker.model.Item;
 import com.hinderegger.steaminventorytracker.model.Price;
+import com.hinderegger.steaminventorytracker.repository.ItemRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.json.JSONObject;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
+import java.io.IOException;
+import java.net.URI;
+import java.net.URLEncoder;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 @Service
 @Slf4j
@@ -31,18 +40,59 @@ public class SteamInventoryTrackerService {
         log.info("Elapsed time in seconds: " + (System.currentTimeMillis() - started) / 1000d);
     }
 
+    public void requestItemsSync() {
+        final List<Item> all = itemRepository.findAll();
+        final long started = System.currentTimeMillis();
+        final HttpClient httpClient = HttpClient.newHttpClient();
+        all.forEach(item -> requestItemSync(httpClient, item));
+        log.info("Elapsed time in seconds: " + (System.currentTimeMillis() - started) / 1000d);
+
+    }
+
+    private void requestItemSync(HttpClient httpClient, Item item) {
+        String url = SteamInventoryTrackerApplication.PATH +
+                URLEncoder.encode(item.getItemName(), StandardCharsets.UTF_8);
+        log.info(url);
+        final HttpRequest httpRequest = HttpRequest
+                .newBuilder()
+                .uri(URI.create(SteamInventoryTrackerApplication.BASEURL+url))
+                .GET()
+                .build();
+        try {
+            final HttpResponse<String> response = httpClient.send(httpRequest, HttpResponse.BodyHandlers.ofString());
+            if (response.statusCode() == 200) {
+                final JSONObject jsonObject = new JSONObject(response.body());
+                parseAndStoreItem(item, jsonObject);
+            } else {
+                log.error("Could not get Item: " + item.getItemName() + ". Reason: " + response.statusCode());
+            }
+            TimeUnit.SECONDS.sleep(30);
+        } catch (IOException | InterruptedException e) {
+            log.error(e.getMessage());
+        }
+    }
+
+    private void parseAndStoreItem(Item item, JSONObject jsonObject) {
+        final String median_price = formatString(jsonObject, "median_price");
+        final String lowest_price = formatString(jsonObject, "lowest_price");
+
+        final Price price = new Price(Double.parseDouble(lowest_price), Double.parseDouble(median_price), LocalDateTime.now());
+        log.info("Adding Item: " + price);
+        item.addPrice(price);
+        itemRepository.save(item);
+    }
+
+    private String formatString(JSONObject jsonObject, String key) {
+        return jsonObject.getString(key).replace("€", "").replace(",", ".").replace("-", "0");
+    }
+
     private void requestItem(Item item) {
         final Mono<String> priceMono = callSteamAPI(item);
 
         priceMono.log().subscribe(priceResponse -> {
             log.info("Price is: " + priceResponse);
             final JSONObject jsonObject = new JSONObject(priceResponse);
-            final String median_price = jsonObject.getString("median_price").replace("€", "").replace(",", ".");
-            final String lowest_price = jsonObject.getString("lowest_price").replace("€", "").replace(",", ".");
-
-            final Price newValue = new Price(Double.parseDouble(lowest_price), Double.parseDouble(median_price), LocalDateTime.now());
-            item.addPrice(newValue);
-            itemRepository.save(item);
+            parseAndStoreItem(item, jsonObject);
         }, error -> {
             log.error("Could not get price");
             throw new IllegalStateException("error while retrieving value for item: " + item.getItemName());
