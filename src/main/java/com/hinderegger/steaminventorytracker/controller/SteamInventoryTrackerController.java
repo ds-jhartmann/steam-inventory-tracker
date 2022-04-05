@@ -2,19 +2,24 @@ package com.hinderegger.steaminventorytracker.controller;
 
 import com.hinderegger.steaminventorytracker.model.BuyInfo;
 import com.hinderegger.steaminventorytracker.model.Item;
+import com.hinderegger.steaminventorytracker.model.Price;
 import com.hinderegger.steaminventorytracker.service.BuyInfoService;
 import com.hinderegger.steaminventorytracker.service.ItemService;
 import com.hinderegger.steaminventorytracker.service.SteamInventoryTrackerService;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 @RestController
 @RequestMapping(path = "/api/v1/items")
 @AllArgsConstructor
+@Slf4j
 public class SteamInventoryTrackerController {
 
     private final SteamInventoryTrackerService steamInventoryTrackerService;
@@ -84,7 +89,28 @@ public class SteamInventoryTrackerController {
     @GetMapping(path = "/startSteamMarketRequest")
     public @ResponseBody
     String startSteamMarketQuery() {
-        steamInventoryTrackerService.requestItemsSync();
-        return "Successful";
+        CompletableFuture.runAsync(steamInventoryTrackerService::requestItemsSync);
+        return "Started Steam Market Request.";
+    }
+
+    @GetMapping(path = "/getTotalValue")
+    public @ResponseBody
+    double getTotalInventoryValue() {
+
+        final List<BuyInfo> allBuyInfos = buyInfoService.getAllBuyInfos();
+        double total = 0.0;
+        for (BuyInfo buyInfo : allBuyInfos) {
+            final String itemName = buyInfo.getItemName();
+            final Item itemByName = itemService.getItemByName(itemName);
+            final List<Price> priceHistory = itemByName.getPriceHistory();
+            if (!priceHistory.isEmpty()) {
+                priceHistory.sort(Comparator.comparing(Price::getTimestamp));
+                final int lastIndex = priceHistory.size() - 1;
+
+                final Price price = priceHistory.get(lastIndex);
+                total += price.getPrice() * buyInfo.getAmount();
+            }
+        }
+        return total;
     }
 }

@@ -45,8 +45,7 @@ public class SteamInventoryTrackerService {
         final long started = System.currentTimeMillis();
         final HttpClient httpClient = HttpClient.newHttpClient();
         all.forEach(item -> requestItemSync(httpClient, item));
-        log.info("Elapsed time in seconds: " + (System.currentTimeMillis() - started) / 1000d);
-
+        log.info("Elapsed time in minutes: " + (System.currentTimeMillis() - started) / 1000d / 60d);
     }
 
     private void requestItemSync(HttpClient httpClient, Item item) {
@@ -55,7 +54,7 @@ public class SteamInventoryTrackerService {
         log.info(url);
         final HttpRequest httpRequest = HttpRequest
                 .newBuilder()
-                .uri(URI.create(SteamInventoryTrackerApplication.BASEURL+url))
+                .uri(URI.create(SteamInventoryTrackerApplication.BASEURL + url))
                 .GET()
                 .build();
         try {
@@ -66,20 +65,24 @@ public class SteamInventoryTrackerService {
             } else {
                 log.error("Could not get Item: " + item.getItemName() + ". Reason: " + response.statusCode());
             }
-            TimeUnit.SECONDS.sleep(30);
+            TimeUnit.SECONDS.sleep(15);
         } catch (IOException | InterruptedException e) {
             log.error(e.getMessage());
         }
     }
 
     private void parseAndStoreItem(Item item, JSONObject jsonObject) {
-        final String median_price = formatString(jsonObject, "median_price");
-        final String lowest_price = formatString(jsonObject, "lowest_price");
+        try {
+            final String median_price = formatString(jsonObject, "median_price");
+            final String lowest_price = formatString(jsonObject, "lowest_price");
 
-        final Price price = new Price(Double.parseDouble(lowest_price), Double.parseDouble(median_price), LocalDateTime.now());
-        log.info("Adding Item: " + price);
-        item.addPrice(price);
-        itemRepository.save(item);
+            final Price price = new Price(Double.parseDouble(lowest_price), Double.parseDouble(median_price), LocalDateTime.now());
+            log.info("Adding Item: " + price);
+            item.addPrice(price);
+            itemRepository.save(item);
+        } catch (Exception e) {
+            log.error(e.getMessage());
+        }
     }
 
     private String formatString(JSONObject jsonObject, String key) {
