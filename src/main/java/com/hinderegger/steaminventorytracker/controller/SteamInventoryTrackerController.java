@@ -106,7 +106,6 @@ public class SteamInventoryTrackerController {
             if (!priceHistory.isEmpty()) {
                 priceHistory.sort(Comparator.comparing(Price::getTimestamp));
                 final int lastIndex = priceHistory.size() - 1;
-
                 final Price price = priceHistory.get(lastIndex);
                 total += price.getPrice() * buyInfo.getAmount();
             }
