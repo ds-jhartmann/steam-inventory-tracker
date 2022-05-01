@@ -9,6 +9,7 @@ import com.hinderegger.steaminventorytracker.service.SteamInventoryTrackerServic
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
@@ -93,6 +94,12 @@ public class SteamInventoryTrackerController {
         return "Started Steam Market Request.";
     }
 
+    @Scheduled(cron = "0 0 */3 * * *") // Every 3 hours
+    private void startSteamMarketQueryScheduled() {
+        log.info("Starting scheduled Steam Market Request");
+        CompletableFuture.runAsync(steamInventoryTrackerService::requestItemsSync);
+    }
+
     @GetMapping(path = "/getTotalValue")
     public @ResponseBody
     double getTotalInventoryValue() {
@@ -102,14 +109,55 @@ public class SteamInventoryTrackerController {
         for (BuyInfo buyInfo : allBuyInfos) {
             final String itemName = buyInfo.getItemName();
             final Item itemByName = itemService.getItemByName(itemName);
-            final List<Price> priceHistory = itemByName.getPriceHistory();
-            if (!priceHistory.isEmpty()) {
-                priceHistory.sort(Comparator.comparing(Price::getTimestamp));
-                final int lastIndex = priceHistory.size() - 1;
-                final Price price = priceHistory.get(lastIndex);
-                total += price.getPrice() * buyInfo.getAmount();
+            try {
+                total += getLatestPriceFromItem(itemByName).getPrice() * buyInfo.getAmount();
+            } catch (Exception e) {
+                log.error(e.getMessage());
             }
         }
         return total;
     }
+
+    private Price getLatestPriceFromItem(Item itemByName) throws ItemQueryException {
+        final List<Price> priceHistory = itemByName.getPriceHistory();
+        if (!priceHistory.isEmpty()) {
+            priceHistory.sort(Comparator.comparing(Price::getTimestamp));
+            final int lastIndex = priceHistory.size() - 1;
+            return priceHistory.get(lastIndex);
+        } else {
+            throw new ItemQueryException("No price history for Item: " + itemByName.getItemName());
+        }
+    }
+
+    @GetMapping(path = "/exportAsCSV", produces = "text/csv")
+    @ResponseBody
+    public String getAllCurrentItemsAsCSV() {
+        List<String> result = new ArrayList<>();
+        result.add("name,price,median");
+
+        itemService.getAllItems().forEach(item -> {
+            final String join = getCSVRow(item);
+            result.add(join);
+        });
+        return String.join(",\n", result);
+    }
+
+    private String getCSVRow(Item item) {
+        String latestPrice;
+        String medianPrice;
+        try {
+            latestPrice = (getLatestPriceFromItem(item).getPrice() + "€").replace(".", ",");
+        } catch (Exception e) {
+            latestPrice = "0,00€";
+            log.error(e.getMessage());
+        }
+        try {
+            medianPrice = (getLatestPriceFromItem(item).getMedian() + "€").replace(".", ",");
+        } catch (Exception e) {
+            medianPrice = "0,00€";
+            log.error(e.getMessage());
+        }
+        return String.join(",", item.getItemName(), "\"" + latestPrice + "\"", "\"" + medianPrice + "\"");
+    }
+
 }
