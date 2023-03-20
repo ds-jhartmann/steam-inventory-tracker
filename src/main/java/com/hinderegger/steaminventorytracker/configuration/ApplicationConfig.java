@@ -1,7 +1,8 @@
-package com.hinderegger.steaminventorytracker;
+package com.hinderegger.steaminventorytracker.configuration;
 
 import io.github.resilience4j.ratelimiter.RateLimiter;
 import io.github.resilience4j.ratelimiter.RateLimiterConfig;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpHeaders;
@@ -10,14 +11,15 @@ import org.springframework.web.reactive.function.client.WebClient;
 
 import java.time.Duration;
 
-import static com.hinderegger.steaminventorytracker.SteamInventoryTrackerApplication.BASEURL;
-
 @Configuration
 public class ApplicationConfig {
 
+    @Value("${steam.baseurl}")
+    private String baseUrl;
+
     @Bean(name = "steamWebClient")
     public WebClient steamWebClient() {
-        return WebClient.builder().baseUrl(BASEURL).defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE).build();
+        return WebClient.builder().baseUrl(baseUrl).defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE).build();
     }
 
     @Bean(name = "steamRateLimiter")

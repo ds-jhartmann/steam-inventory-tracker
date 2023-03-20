@@ -1,11 +1,12 @@
 package com.hinderegger.steaminventorytracker.service;
 
-import com.hinderegger.steaminventorytracker.SteamInventoryTrackerApplication;
 import com.hinderegger.steaminventorytracker.model.Item;
 import com.hinderegger.steaminventorytracker.model.Price;
 import com.hinderegger.steaminventorytracker.repository.ItemRepository;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.json.JSONObject;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
@@ -23,14 +24,16 @@ import java.util.concurrent.TimeUnit;
 
 @Service
 @Slf4j
+@RequiredArgsConstructor
 public class SteamInventoryTrackerService {
     private final ItemRepository itemRepository;
     private final SteamMarketAPICallerService steamMarketAPICallerService;
 
-    public SteamInventoryTrackerService(ItemRepository itemRepository, SteamMarketAPICallerService steamMarketAPICallerService) {
-        this.itemRepository = itemRepository;
-        this.steamMarketAPICallerService = steamMarketAPICallerService;
-    }
+    @Value("${steam.baseurl}")
+    private String baseUrl;
+
+    @Value("${steam.path}")
+    private String path;
 
     public void requestItems() {
         final List<Item> all = itemRepository.findAll();
@@ -49,12 +52,12 @@ public class SteamInventoryTrackerService {
     }
 
     private void requestItemSync(HttpClient httpClient, Item item) {
-        String url = SteamInventoryTrackerApplication.PATH +
+        String url = path +
                 URLEncoder.encode(item.getItemName(), StandardCharsets.UTF_8);
         log.info(url);
         final HttpRequest httpRequest = HttpRequest
                 .newBuilder()
-                .uri(URI.create(SteamInventoryTrackerApplication.BASEURL + url))
+                .uri(URI.create(baseUrl + url))
                 .GET()
                 .build();
         try {
@@ -66,8 +69,11 @@ public class SteamInventoryTrackerService {
                 log.error("Could not get Item: " + item.getItemName() + ". Reason: " + response.statusCode());
             }
             TimeUnit.SECONDS.sleep(15);
-        } catch (IOException | InterruptedException e) {
-            log.error(e.getMessage());
+        } catch (final IOException e) {
+            log.error("Error while requesting Item.", e);
+        } catch (final InterruptedException e) {
+            log.error("Interrupt exception thrown.", e);
+            Thread.currentThread().interrupt();
         }
     }
 

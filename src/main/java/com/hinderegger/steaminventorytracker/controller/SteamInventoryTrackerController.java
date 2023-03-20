@@ -17,8 +17,10 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
+import static com.hinderegger.steaminventorytracker.configuration.Constants.API_PATH;
+
 @RestController
-@RequestMapping(path = "/api/v1/items")
+@RequestMapping(path = API_PATH)
 @AllArgsConstructor
 @Slf4j
 public class SteamInventoryTrackerController {
