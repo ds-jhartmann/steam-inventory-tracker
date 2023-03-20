@@ -1,12 +1,12 @@
 package com.hinderegger.steaminventorytracker.service;
 
+import com.hinderegger.steaminventorytracker.configuration.SteamConfiguration;
 import com.hinderegger.steaminventorytracker.model.Item;
 import com.hinderegger.steaminventorytracker.model.Price;
 import com.hinderegger.steaminventorytracker.repository.ItemRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.json.JSONObject;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
@@ -28,12 +28,7 @@ import java.util.concurrent.TimeUnit;
 public class SteamInventoryTrackerService {
     private final ItemRepository itemRepository;
     private final SteamMarketAPICallerService steamMarketAPICallerService;
-
-    @Value("${steam.baseurl}")
-    private String baseUrl;
-
-    @Value("${steam.path}")
-    private String path;
+    private final SteamConfiguration steamConfig;
 
     public void requestItems() {
         final List<Item> all = itemRepository.findAll();
@@ -52,12 +47,12 @@ public class SteamInventoryTrackerService {
     }
 
     private void requestItemSync(HttpClient httpClient, Item item) {
-        String url = path +
+        String url = steamConfig.getPath() +
                 URLEncoder.encode(item.getItemName(), StandardCharsets.UTF_8);
         log.info(url);
         final HttpRequest httpRequest = HttpRequest
                 .newBuilder()
-                .uri(URI.create(baseUrl + url))
+                .uri(URI.create(steamConfig.getBaseurl() + url))
                 .GET()
                 .build();
         try {
