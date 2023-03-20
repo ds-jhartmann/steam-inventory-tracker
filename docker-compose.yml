@@ -7,7 +7,7 @@ services:
     ports:
       - "27017:27017"
     volumes:
-      - data:/data
+      - ./data:/data
     environment:
       MONGO_INITDB_ROOT_USERNAME: rootuser
       MONGO_INITDB_ROOT_PASSWORD: rootpass
@@ -23,9 +23,16 @@ services:
       ME_CONFIG_MONGODB_ADMINPASSWORD: rootpass
       ME_CONFIG_MONGODB_SERVER: mongodb
 
-volumes:
-  data: {}
+#  steam-inventory-tracker:
+#    container_name: steam-inventory-tracker
+#    image: steam-inventory-tracker:latest
+#    build: .
+#    ports:
+#      - "8080:8080"
+#    depends_on:
+#      - mongo
 
 networks:
-  default:
-    name: mongodb_network
+  backend:
+    external: true
+    name: backend

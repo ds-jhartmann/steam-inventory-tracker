@@ -4,14 +4,15 @@ import com.hinderegger.steaminventorytracker.SteamInventoryTrackerApplication;
 import com.hinderegger.steaminventorytracker.model.Item;
 import io.github.resilience4j.ratelimiter.RateLimiter;
 import io.github.resilience4j.reactor.ratelimiter.operator.RateLimiterOperator;
+import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.publisher.Mono;
 import reactor.util.retry.Retry;
 
-import javax.annotation.Resource;
 import java.time.Duration;
 import java.time.LocalDateTime;
 
@@ -25,6 +26,9 @@ public class SteamMarketAPICallerService {
     @Resource(name = "steamRateLimiter")
     private RateLimiter rateLimiter;
 
+    @Value("${steam.path}")
+    private String path;
+
     public Mono<String> getPriceForItem(Item item) {
         return getFromApi(item.getItemName());
     }
@@ -34,7 +38,7 @@ public class SteamMarketAPICallerService {
 
         return client
                 .get()
-                .uri(SteamInventoryTrackerApplication.PATH + itemName)
+                .uri(path + itemName)
                 .retrieve()
                 .bodyToMono(String.class)
                 .doOnSubscribe(s -> log.info(SteamInventoryTrackerApplication.COUNTER.incrementAndGet() + " - " + LocalDateTime.now()
