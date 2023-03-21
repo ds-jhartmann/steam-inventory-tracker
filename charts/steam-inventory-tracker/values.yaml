@@ -12,9 +12,9 @@ imagePullSecrets: []
 
 imageCredentials:
   registry: docker.io
-  username: jhrtmnn
-  password: dckr_pat_6Tvqn51lV-fpQIGi4KC8PPQ4FeQ
-  email: jaro@hinderegger.com
+  username: 
+  password: 
+  email: 
 
 serviceAccount:
   # Specifies whether a service account should be created
