@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "steam-inventory-tracker.fullname" . }}-configmap
+data:
+  application.yaml: |-
+    spring:
+      data:
+        mongodb:
+          authentication-database: {{ .Values.sit.mongodb.authenticationdatabase }}
+          username: {{ .Values.sit.mongodb.username }}
+          password: {{ .Values.sit.mongodb.password }}
+          database: {{ .Values.sit.mongodb.database }}
+          port: {{ .Values.sit.mongodb.port }}
+          host: {{ .Values.sit.mongodb.host }}
+          auto-index-creation: {{ .Values.sit.mongodb.autoindexcreation }}
