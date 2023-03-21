@@ -11,5 +11,9 @@ spec:
       targetPort: http
       protocol: TCP
       name: http
+    - port: {{ .Values.service.actuatorPort }}
+      targetPort: actuator
+      protocol: TCP
+      name: actuator
   selector:
     {{- include "steam-inventory-tracker.selectorLabels" . | nindent 4 }}
