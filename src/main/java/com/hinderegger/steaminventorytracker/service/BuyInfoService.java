@@ -25,7 +25,7 @@ public class BuyInfoService {
         return itemByName;
     }
 
-    public List<BuyInfo> getAllItems() {
+    public List<BuyInfo> getAllBuyInfos() {
         return buyInfoRepository.findAll();
     }
 }
