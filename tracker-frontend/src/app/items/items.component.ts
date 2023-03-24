@@ -1,7 +1,6 @@
 import {Component, OnInit} from '@angular/core';
 import {Item} from "./item";
 import {ItemService} from "../item.service";
-import {MessageService} from "../message.service";
 
 @Component({
   selector: 'app-items',
@@ -10,18 +9,12 @@ import {MessageService} from "../message.service";
 })
 export class ItemsComponent implements OnInit {
   items: Item[] = [];
-  selectedItem?: Item;
 
-  constructor(private itemService: ItemService, private messageService: MessageService) {
+  constructor(private itemService: ItemService) {
   }
 
   ngOnInit(): void {
     this.getItems();
-  }
-
-  onSelect(item: Item): void {
-    this.selectedItem = item;
-    this.messageService.add(`ItemsComponent: Selected item id=${item.id}`)
   }
 
   getItems(): void {
