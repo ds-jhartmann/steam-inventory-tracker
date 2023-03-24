@@ -1,7 +1,10 @@
 <div *ngIf="item">
   <h2>{{item.name | uppercase}} Details</h2>
   <div>id: {{item.id}}</div>
-  <div>price: {{item.price}}</div>
+  <div>price: {{item.price | currency:'EUR'}}</div>
+  <!--insert chart of price history here. Make the timespan selectable-->
+  <div>history: {{item.priceHistory}}</div>
+  <!-- Remove edit ability of name -->
   <div>
     <label for="item-name">Item name:</label>
     <input id="item-name" [(ngModel)]="item.name" placeholder="name">
