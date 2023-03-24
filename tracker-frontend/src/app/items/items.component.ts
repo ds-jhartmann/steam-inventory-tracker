@@ -9,19 +9,18 @@ import {ItemService} from "../item.service";
 })
 export class ItemsComponent {
   items: Item[] = [];
+  selectedItem?: Item;
 
   constructor(private itemService: ItemService) {
-  }
-
-  getItems(): void {
-    this.itemService.getItems().subscribe(items => this.items = items);
   }
 
   ngOnInit(): void {
     this.getItems();
   }
 
-  selectedItem?: Item;
+  getItems(): void {
+    this.itemService.getItems().subscribe(items => this.items = items);
+  }
 
   onSelect(item: Item): void {
     this.selectedItem = item;
