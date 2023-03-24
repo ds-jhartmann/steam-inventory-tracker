@@ -1,6 +1,6 @@
+import {PriceHistory} from "./priceHistory";
+
 export interface Item {
-  id: number;
-  name: string;
-  price: number;
-  priceHistory: number[];
+  itemName: string;
+  priceHistory: PriceHistory[];
 }

@@ -24,8 +24,8 @@ export class ItemDetailComponent implements OnInit {
   }
 
   private getItem(): void {
-    const id = Number(this.route.snapshot.paramMap.get('id'));
-    this.itemService.getItem(id).subscribe(item => this.item = item);
+    const name = this.route.snapshot.paramMap.get('itemName')!;
+    this.itemService.getItem(name).subscribe(item => this.item = item);
   }
 
   goBack():void {

@@ -1,17 +1,40 @@
 import {Item} from "./items/item";
+import {PriceHistory} from "./items/priceHistory";
 
+const history: PriceHistory[] = [
+  {
+    "price": 1.57,
+    "median": 1.64,
+    "timestamp": "2023-03-22T21:19:29.522"
+  },
+  {
+    "price": 1.72,
+    "median": 1.65,
+    "timestamp": "2023-03-23T20:53:55.155"
+  },
+  {
+    "price": 1.7,
+    "median": 1.65,
+    "timestamp": "2023-03-23T21:00:00.293"
+  },
+  {
+    "price": 2.22,
+    "median": 2.23,
+    "timestamp": "2023-03-24T22:40:21.711"
+  }
+]
 export const ITEMS: Item[] = [
-  {id: 1, name: 'Chroma Case', price: 0.5, priceHistory: [0.1, 0.2, 0.3, 0.4]},
-  {id: 2, name: 'Chroma 2 Case', price: 0.5, priceHistory: [0.1, 0.2, 0.3, 0.4]},
-  {id: 3, name: 'Chroma 3 Case', price: 0.5, priceHistory: [0.1, 0.2, 0.3, 0.4]},
-  {id: 4, name: 'Clutch Case', price: 0.5, priceHistory: [0.1, 0.2, 0.3, 0.4]},
-  {id: 5, name: 'CS20 Case', price: 0.5, priceHistory: [0.1, 0.2, 0.3, 0.4]},
-  {id: 6, name: 'Danger Zone Case', price: 0.5, priceHistory: [0.1, 0.2, 0.3, 0.4]},
-  {id: 7, name: 'Falchion Case', price: 0.5, priceHistory: [0.1, 0.2, 0.3, 0.4]},
-  {id: 8, name: 'Gamma Case', price: 0.5, priceHistory: [0.1, 0.2, 0.3, 0.4]},
-  {id: 9, name: 'Gamma 2 Case', price: 0.5, priceHistory: [0.1, 0.2, 0.3, 0.4]},
-  {id: 10, name: 'Glove Case', price: 0.5, priceHistory: [0.1, 0.2, 0.3, 0.4]},
-  {id: 11, name: 'Horizon Case', price: 0.5, priceHistory: [0.1, 0.2, 0.3, 0.4]},
-  {id: 12, name: 'Huntsman Weapon Case', price: 0.5, priceHistory: [0.1, 0.2, 0.3, 0.4]},
-  {id: 13, name: 'Operation Breakout Weapon Case', price: 0.5, priceHistory: [0.1, 0.2, 0.3, 0.4]}
+  {itemName: 'Chroma Case', priceHistory: history},
+  {itemName: 'Chroma 2 Case', priceHistory: history},
+  {itemName: 'Chroma 3 Case', priceHistory: history},
+  {itemName: 'Clutch Case', priceHistory: history},
+  {itemName: 'CS20 Case', priceHistory: history},
+  {itemName: 'Danger Zone Case', priceHistory: history},
+  {itemName: 'Falchion Case', priceHistory: history},
+  {itemName: 'Gamma Case', priceHistory: history},
+  {itemName: 'Gamma 2 Case', priceHistory: history},
+  {itemName: 'Glove Case', priceHistory: history},
+  {itemName: 'Horizon Case', priceHistory: history},
+  {itemName: 'Huntsman Weapon Case', priceHistory: history},
+  {itemName: 'Operation Breakout Weapon Case', priceHistory: history}
 ];
