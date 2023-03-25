@@ -1,18 +1,5 @@
 <div *ngIf="item">
   <h2>{{item.itemName | uppercase}} Details</h2>
-  <!-- Add chart of history -->
-  <table>
-    <caption>price history</caption>
-    <tr>
-      <th>Price</th>
-      <th>Median</th>
-      <th>Time</th>
-    </tr>
-    <tr *ngFor="let history of item.priceHistory.reverse()">
-      <td>{{history.price}}</td>
-      <td>{{history.median}}</td>
-      <td>{{history.timestamp}}</td>
-    </tr>
-  </table>
+  <app-price-graph [item]="item"></app-price-graph>
 </div>
 <button type="button" (click)="goBack()">go back</button>
