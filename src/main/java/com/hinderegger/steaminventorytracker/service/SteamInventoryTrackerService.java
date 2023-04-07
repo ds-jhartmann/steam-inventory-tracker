@@ -98,7 +98,7 @@ public class SteamInventoryTrackerService {
     }
 
     private String formatString(JSONObject jsonObject, String key) {
-        return jsonObject.getString(key).replace("€", "").replace(",", ".").replace("-", "0");
+        return jsonObject.getString(key).replace("€", "").replace(",", ".").replace(" ", "").replace("-", "0");
     }
 
     private void requestItem(Item item) {
