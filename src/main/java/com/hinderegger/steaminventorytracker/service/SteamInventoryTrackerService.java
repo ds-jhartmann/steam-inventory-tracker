@@ -74,18 +74,24 @@ public class SteamInventoryTrackerService {
 
     private void parseAndStoreItem(Item item, JSONObject jsonObject) {
         try {
-            final double median_price = Double.parseDouble(formatString(jsonObject, "median_price"));
-            final double lowest_price = Double.parseDouble(formatString(jsonObject, "lowest_price"));
+            double medianPrice = 0;
+            double lowestPrice = 0;
+            if (jsonObject.has("median_price")) {
+                medianPrice = Double.parseDouble(formatString(jsonObject, "median_price"));
+            }
+            if (jsonObject.has("lowest_price")) {
+                lowestPrice = Double.parseDouble(formatString(jsonObject, "lowest_price"));
+            }
 
-            if (lowest_price > 0.0) {
-                final Price price = new Price(lowest_price, median_price, LocalDateTime.now());
+            if (lowestPrice > 0.0) {
+                final Price price = new Price(lowestPrice, medianPrice, LocalDateTime.now());
                 log.info("Adding Item: " + price);
                 item.addPrice(price);
                 itemRepository.save(item);
             } else {
                 log.error("No lowest_price found. Skipping Item: " + item.getItemName());
             }
-        } catch (Exception e) {
+        } catch (NumberFormatException e) {
             log.error("Error while accessing Response JSON. Skipping Item: " + item.getItemName());
             log.error(e.getMessage());
         }
