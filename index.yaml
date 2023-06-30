@@ -1,0 +1,18 @@
+apiVersion: v1
+entries:
+  steam-inventory-tracker:
+  - apiVersion: v2
+    appVersion: 0.0.2
+    created: "2023-06-30T21:56:06.739293601Z"
+    dependencies:
+    - name: mongodb
+      repository: https://charts.bitnami.com/bitnami
+      version: 13.6.4
+    description: A Helm chart for Kubernetes
+    digest: 9d0ed0bbe1113593559f19c17e9503022f2bb859069d9c0873193f4776960988
+    name: steam-inventory-tracker
+    type: application
+    urls:
+    - https://github.com/jrohrtmn/steam-inventory-tracker/releases/download/steam-inventory-tracker-0.0.1/steam-inventory-tracker-0.0.1.tgz
+    version: 0.0.1
+generated: "2023-06-30T21:56:06.739304502Z"
