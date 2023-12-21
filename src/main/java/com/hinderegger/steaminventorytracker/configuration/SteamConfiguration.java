@@ -8,6 +8,6 @@ import org.springframework.stereotype.Component;
 @ConfigurationProperties(prefix = "steam")
 @Data
 public class SteamConfiguration {
-    private String baseurl;
-    private String path;
+  private String baseurl;
+  private String path;
 }
