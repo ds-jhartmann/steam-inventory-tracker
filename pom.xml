@@ -5,14 +5,17 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.0.0</version>
+        <version>3.2.1</version>
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
+
     <groupId>com.hinderegger</groupId>
     <artifactId>steam-inventory-tracker</artifactId>
     <version>0.0.1-SNAPSHOT</version>
+
     <name>steam-inventory-tracker</name>
     <description>Application to track your Steam Inventory prices</description>
+
     <properties>
         <java.version>17</java.version>
         <springdoc.version>1.6.7</springdoc.version>
