@@ -1,6 +1,9 @@
 steam:
   baseurl: "https://steamcommunity.com/market/priceoverview/?"
   path: "appid=730&currency=3&market_hash_name="
+  timeoutDuration: PT30M #
+  limitRefreshPeriod: PT30S # wait time between periods
+  limitForPeriod: 1 # apply the wait duration for every request
 spring:
   application:
     name: steam-inventory-tracker
