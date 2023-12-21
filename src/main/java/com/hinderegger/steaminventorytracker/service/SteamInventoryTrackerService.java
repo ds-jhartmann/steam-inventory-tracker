@@ -28,6 +28,7 @@ public class SteamInventoryTrackerService {
   private final ItemRepository itemRepository;
   private final SteamMarketAPICallerService steamMarketAPICallerService;
   private final SteamConfiguration steamConfig;
+  private final HttpClient httpClient;
 
   public void requestItems() {
     final List<Item> all = itemRepository.findAll();
@@ -40,7 +41,6 @@ public class SteamInventoryTrackerService {
   public void requestItemsSync() {
     final List<Item> all = itemRepository.findAll();
     final long started = System.currentTimeMillis();
-    final HttpClient httpClient = HttpClient.newHttpClient();
     all.forEach(item -> requestItemSync(httpClient, item));
     log.info("Elapsed time in minutes: " + (System.currentTimeMillis() - started) / 1000d / 60d);
   }

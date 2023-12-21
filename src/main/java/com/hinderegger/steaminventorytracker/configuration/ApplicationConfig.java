@@ -2,6 +2,8 @@ package com.hinderegger.steaminventorytracker.configuration;
 
 import io.github.resilience4j.ratelimiter.RateLimiter;
 import io.github.resilience4j.ratelimiter.RateLimiterConfig;
+
+import java.net.http.HttpClient;
 import java.time.Duration;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -33,5 +35,10 @@ public class ApplicationConfig {
             .limitForPeriod(1)
             .timeoutDuration(Duration.ofMinutes(10L))
             .build());
+  }
+
+  @Bean
+  public HttpClient httpClient() {
+    return HttpClient.newHttpClient();
   }
 }
