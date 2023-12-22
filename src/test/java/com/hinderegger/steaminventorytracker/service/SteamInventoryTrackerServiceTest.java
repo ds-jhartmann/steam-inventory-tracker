@@ -33,6 +33,7 @@ class SteamInventoryTrackerServiceTest {
     var steamConfig = new SteamConfiguration();
     steamConfig.setBaseurl("http://local.test");
     steamConfig.setPath("/test?query=");
+    steamConfig.setSleepDuration(1);
     itemRepository = mock(ItemRepository.class);
     httpClient = mock(HttpClient.class);
     testee = new SteamInventoryTrackerService(itemRepository, steamMock, steamConfig, httpClient);

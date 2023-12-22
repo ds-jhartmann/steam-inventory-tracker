@@ -35,9 +35,9 @@ class SteamMarketAPICallerServiceTest {
         RateLimiter.of(
             "test",
             RateLimiterConfig.custom()
-                .limitRefreshPeriod(Duration.ofSeconds(5L))
+                .limitRefreshPeriod(Duration.ofSeconds(2L))
                 .limitForPeriod(1)
-                .timeoutDuration(Duration.ofSeconds(15L))
+                .timeoutDuration(Duration.ofSeconds(6L))
                 .build());
     testee = new SteamMarketAPICallerService(webClient, rateLimiter, "?market_hash_name=");
   }
@@ -81,7 +81,7 @@ class SteamMarketAPICallerServiceTest {
     test.stop();
 
     // Assert
-    assertThat(test.getTotalTime(TimeUnit.SECONDS)).isGreaterThan(4);
+    assertThat(test.getTotalTime(TimeUnit.SECONDS)).isGreaterThan(1);
     assertThat(result1)
         .isEqualTo(
             "{\"success\":true,\"lowest_price\":\"5,79€\",\"volume\":\"3,990\",\"median_price\":\"5,61€\"}");

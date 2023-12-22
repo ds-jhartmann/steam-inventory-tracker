@@ -61,7 +61,7 @@ public class SteamInventoryTrackerService {
         log.error(
             "Could not get Item: " + item.getItemName() + ". Reason: " + response.statusCode());
       }
-      TimeUnit.SECONDS.sleep(15);
+      TimeUnit.SECONDS.sleep(steamConfig.getSleepDuration());
     } catch (final IOException e) {
       log.error("Error while requesting Item.", e);
     } catch (final InterruptedException e) {

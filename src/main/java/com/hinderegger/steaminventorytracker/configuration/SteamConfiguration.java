@@ -14,4 +14,5 @@ public class SteamConfiguration {
   private Duration timeoutDuration;
   private Duration limitRefreshPeriod;
   private int limitForPeriod;
+  private int sleepDuration;
 }
