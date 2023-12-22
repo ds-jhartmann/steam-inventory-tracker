@@ -1,20 +1,22 @@
 package com.hinderegger.steaminventorytracker.controller;
 
-import static com.hinderegger.steaminventorytracker.configuration.Constants.API_PATH;
+import static com.hinderegger.steaminventorytracker.SteamInventoryTrackerApplication.API_PATH;
 
+import com.hinderegger.steaminventorytracker.CSVExporter;
+import com.hinderegger.steaminventorytracker.PriceParser;
 import com.hinderegger.steaminventorytracker.model.BuyInfo;
 import com.hinderegger.steaminventorytracker.model.Item;
-import com.hinderegger.steaminventorytracker.model.Price;
 import com.hinderegger.steaminventorytracker.service.BuyInfoService;
 import com.hinderegger.steaminventorytracker.service.ItemService;
 import com.hinderegger.steaminventorytracker.service.SteamInventoryTrackerService;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.web.bind.annotation.*;
 
@@ -29,129 +31,99 @@ public class SteamInventoryTrackerController {
   private final BuyInfoService buyInfoService;
 
   @PostMapping(path = "/addItem")
-  public @ResponseStatus Item addNewItem(@RequestParam String name) {
-    final Item item = new Item(name, List.of());
-
-    return itemService.addItem(item);
+  public ResponseEntity<Item> addNewItem(@RequestParam final String name) {
+    final Item item = itemService.addItem(name);
+    return ResponseEntity.ok(item);
   }
 
   @PostMapping(path = "/registerBuyInfo")
-  public @ResponseStatus BuyInfo registerBuyInfo(
-      @RequestParam String name, @RequestParam Integer amount, @RequestParam Double buyPrice) {
-    final BuyInfo item = new BuyInfo(name, amount, buyPrice);
-
-    return buyInfoService.addBuyInfo(item);
+  public ResponseEntity<BuyInfo> registerBuyInfo(
+      @RequestParam final String name,
+      @RequestParam final Integer amount,
+      @RequestParam final Double buyPrice) {
+    log.info(
+        "Registering Buyer info for '{}', amount: '{}', buy price: '{}'", name, amount, buyPrice);
+    final BuyInfo buyInfo = buyInfoService.addBuyInfo(name, amount, buyPrice);
+    return ResponseEntity.ok(buyInfo);
   }
 
   @PostMapping(path = "/registerBuyInfos")
-  public @ResponseStatus List<BuyInfo> registerBuyInfos(@RequestBody List<BuyInfo> buyInfos) {
-    final ArrayList<BuyInfo> returnBuyInfos = new ArrayList<>();
-    for (BuyInfo buyInfo : buyInfos) {
-      returnBuyInfos.add(buyInfoService.addBuyInfo(buyInfo));
-    }
-
-    return returnBuyInfos;
+  public ResponseEntity<List<BuyInfo>> registerBuyInfos(@RequestBody final List<BuyInfo> buyInfos) {
+    List<BuyInfo> addedBuyInfos = buyInfoService.addBuyInfos(buyInfos);
+    return ResponseEntity.ok(addedBuyInfos);
   }
 
   @PostMapping(path = "/addItems", consumes = MediaType.APPLICATION_JSON_VALUE)
-  public @ResponseStatus List<Item> addNewItems(@RequestBody List<Item> items) {
+  public ResponseEntity<List<Item>> addNewItems(@RequestBody final List<Item> items) {
     final ArrayList<Item> returnItems = new ArrayList<>();
-    for (Item item : items) {
+    for (final Item item : items) {
       returnItems.add(itemService.addItem(item));
     }
-
-    return returnItems;
+    return ResponseEntity.ok(returnItems);
   }
 
   @PostMapping(path = "/updatePrice")
-  public @ResponseBody Item updatePrice(
-      @RequestParam String name, @RequestParam double price, @RequestParam double median) {
-
-    return itemService.updatePriceForItem(name, price, median);
+  public ResponseEntity<Item> updatePrice(
+      @RequestParam final String name,
+      @RequestParam final double price,
+      @RequestParam final double median) {
+    log.info("Updating price for Item '{}' with price '{}' and median '{}'", name, price, median);
+    final Item item = itemService.updatePriceForItem(name, price, median);
+    return ResponseEntity.ok(item);
   }
 
   @GetMapping(path = "/getItem")
-  public Item getItemByName(@RequestParam String name) {
-    return itemService.getItemByName(name);
+  public ResponseEntity<Item> getItemByName(@RequestParam final String name) {
+    log.info("Returning Item for name '{}'", name);
+    final Item item = itemService.getItemByName(name);
+    return ResponseEntity.ok(item);
   }
 
   @GetMapping(path = "/all")
-  public @ResponseBody Iterable<Item> getAllItems() {
-    return itemService.getAllItems();
+  @ResponseStatus(HttpStatus.OK)
+  public ResponseEntity<List<Item>> getAllItems() {
+    log.info("Returning all Items.");
+    List<Item> allItems = itemService.getAllItems();
+    return ResponseEntity.ok(allItems);
   }
 
   @GetMapping(path = "/startSteamMarketRequest")
-  public @ResponseBody String startSteamMarketQuery() {
+  public ResponseEntity<String> startSteamMarketQuery() {
+    log.info("Starting Steam Market Request.");
     CompletableFuture.runAsync(steamInventoryTrackerService::requestItemsSync);
-    return "Started Steam Market Request.";
+    return ResponseEntity.ok("Started Steam Market Request.");
   }
 
   @Scheduled(cron = "0 0 */3 * * *") // Every 3 hours
   private void startSteamMarketQueryScheduled() {
-    log.info("Starting scheduled Steam Market Request");
+    log.info("Starting scheduled Steam Market Request.");
     CompletableFuture.runAsync(steamInventoryTrackerService::requestItemsSync);
   }
 
   @GetMapping(path = "/getTotalValue")
-  public @ResponseBody double getTotalInventoryValue() {
+  @ResponseStatus(HttpStatus.OK)
+  public double getTotalInventoryValue() {
 
     final List<BuyInfo> allBuyInfos = buyInfoService.getAllBuyInfos();
     double total = 0.0;
-    for (BuyInfo buyInfo : allBuyInfos) {
+    for (final BuyInfo buyInfo : allBuyInfos) {
       final String itemName = buyInfo.getItemName();
       final Item itemByName = itemService.getItemByName(itemName);
       try {
-        total += getLatestPriceFromItem(itemByName).getPrice() * buyInfo.getAmount();
-      } catch (Exception e) {
+        total += PriceParser.getLatestPriceFromItem(itemByName).getPrice() * buyInfo.getAmount();
+      } catch (final Exception e) {
         log.error(e.getMessage());
       }
     }
     return total;
   }
 
-  private Price getLatestPriceFromItem(Item itemByName) throws ItemQueryException {
-    final List<Price> priceHistory = itemByName.getPriceHistory();
-    if (!priceHistory.isEmpty()) {
-      priceHistory.sort(Comparator.comparing(Price::getTimestamp));
-      final int lastIndex = priceHistory.size() - 1;
-      return priceHistory.get(lastIndex);
-    } else {
-      throw new ItemQueryException("No price history for Item: " + itemByName.getItemName());
-    }
-  }
-
   @GetMapping(path = "/exportAsCSV", produces = "text/csv")
-  @ResponseBody
-  public String getAllCurrentItemsAsCSV() {
-    List<String> result = new ArrayList<>();
-    result.add("name,price,median");
-
-    itemService
-        .getAllItems()
-        .forEach(
-            item -> {
-              final String join = getCSVRow(item);
-              result.add(join);
-            });
-    return String.join(",\n", result);
-  }
-
-  private String getCSVRow(Item item) {
-    String latestPrice;
-    String medianPrice;
-    try {
-      latestPrice = (getLatestPriceFromItem(item).getPrice() + "€").replace(".", ",");
-    } catch (Exception e) {
-      latestPrice = "0,00€";
-      log.error(e.getMessage());
-    }
-    try {
-      medianPrice = (getLatestPriceFromItem(item).getMedian() + "€").replace(".", ",");
-    } catch (Exception e) {
-      medianPrice = "0,00€";
-      log.error(e.getMessage());
-    }
-    return String.join(
-        ",", item.getItemName(), "\"" + latestPrice + "\"", "\"" + medianPrice + "\"");
+  @ResponseStatus(HttpStatus.OK)
+  public ResponseEntity<String> getAllCurrentItemsAsCSV() {
+    log.info("Exporting latest prices as CSV.");
+    List<Item> items = itemService.getAllItems();
+    String csv = CSVExporter.createCSV(items);
+    return ResponseEntity.ok(csv);
   }
 }

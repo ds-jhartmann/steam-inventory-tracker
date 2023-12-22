@@ -7,18 +7,37 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 @Service
 @AllArgsConstructor
+@Slf4j
 public class ItemService {
 
   private final ItemRepository itemRepository;
 
   public Item addItem(Item item) {
-    return itemRepository.insert(item);
+    final String itemName = item.getItemName();
+    if (itemRepository.findById(itemName).isEmpty()) {
+      log.info("Adding Item '{}'.", itemName);
+      return itemRepository.insert(item);
+    } else {
+      log.info("Item '{}' already present.", itemName);
+      throw new ResponseStatusException(
+          HttpStatus.BAD_REQUEST, "Item already exists for name " + itemName);
+    }
+  }
+
+  public Item addItem(String itemName) {
+    final Item item = new Item(itemName, List.of());
+    return addItem(item);
+  }
+
+  public List<Item> addItems(List<Item> items) {
+    return itemRepository.insert(items);
   }
 
   public Item updatePriceForItem(String name, double price, double median) {
@@ -30,7 +49,7 @@ public class ItemService {
       return itemRepository.save(item);
     } else {
       throw new ResponseStatusException(
-          HttpStatus.NOT_FOUND, "Item \"" + name + "\" does not exist.");
+          HttpStatus.NOT_FOUND, "Item '" + name + "' does not exist.");
     }
   }
 
