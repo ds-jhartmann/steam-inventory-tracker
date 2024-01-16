@@ -50,12 +50,6 @@ jobs:
           files: |
             target/surefire-reports/*.xml
 
-      - name: Build and analyze
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        run: mvn -B org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.projectKey=jrohrtmn_steam-inventory-tracker
-
   push_to_registry:
     name: Push Docker image to Docker Hub
     runs-on: ubuntu-latest
