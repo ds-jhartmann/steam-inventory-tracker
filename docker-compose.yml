@@ -24,16 +24,13 @@ services:
       ME_CONFIG_MONGODB_ADMINPASSWORD: rootpass
       ME_CONFIG_MONGODB_SERVER: mongodb
 
-#  steam-inventory-tracker:
-#    container_name: steam-inventory-tracker
-#    image: steam-inventory-tracker:latest
-#    build: .
-#    ports:
-#      - "8080:8080"
-#    depends_on:
-#      - mongo
-
-networks:
-  backend:
-    external: true
-    name: backend
+  steam-inventory-tracker:
+    image: jhrtmnn/steam-inventory-tracker:pr-11
+    container_name: steam-inventory-tracker
+    restart: always
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_DATA_MONGODB_HOST: "mongodb"
+    depends_on:
+      - mongo
