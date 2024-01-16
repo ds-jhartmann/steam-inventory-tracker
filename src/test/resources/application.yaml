@@ -1,0 +1,10 @@
+spring:
+  application:
+    name: steam-inventory-tracker
+  data:
+    mongodb:
+      database: steam-inventory-tracker
+      port: ${mongodb.container.port}
+      host: localhost
+      auto-index-creation: true
+

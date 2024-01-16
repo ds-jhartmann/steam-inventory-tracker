@@ -4,7 +4,8 @@ import com.hinderegger.steaminventorytracker.SteamInventoryTrackerApplication;
 import com.hinderegger.steaminventorytracker.model.Item;
 import io.github.resilience4j.ratelimiter.RateLimiter;
 import io.github.resilience4j.reactor.ratelimiter.operator.RateLimiterOperator;
-import jakarta.annotation.Resource;
+import java.time.Duration;
+import java.time.LocalDateTime;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -13,41 +14,56 @@ import org.springframework.web.reactive.function.client.WebClientResponseExcepti
 import reactor.core.publisher.Mono;
 import reactor.util.retry.Retry;
 
-import java.time.Duration;
-import java.time.LocalDateTime;
+import static reactor.core.Exceptions.isRetryExhausted;
 
 @Slf4j
 @Service
 public class SteamMarketAPICallerService {
 
-    @Resource(name = "steamWebClient")
-    private WebClient client;
+  private final WebClient client;
 
-    @Resource(name = "steamRateLimiter")
-    private RateLimiter rateLimiter;
+  private final RateLimiter rateLimiter;
 
-    @Value("${steam.path}")
-    private String path;
+  private final String path;
 
-    public Mono<String> getPriceForItem(Item item) {
-        return getFromApi(item.getItemName());
+  public SteamMarketAPICallerService(
+      final WebClient client,
+      final RateLimiter rateLimiter,
+      final @Value("${steam.path}") String path) {
+    this.client = client;
+    this.rateLimiter = rateLimiter;
+    this.path = path;
+  }
+
+  public Mono<String> getPriceForItem(final Item item) {
+    String itemName = item.getItemName();
+
+    log.info("Starting api request for item: " + itemName);
+
+    try {
+      return client
+          .get()
+          .uri(path + itemName)
+          .retrieve()
+          .bodyToMono(String.class)
+          .doOnSubscribe(
+              s ->
+                  log.info(
+                      "{} - {} - call triggered",
+                      SteamInventoryTrackerApplication.COUNTER.incrementAndGet(),
+                      LocalDateTime.now()))
+          .transformDeferred(RateLimiterOperator.of(rateLimiter))
+          .retryWhen(Retry.backoff(3, Duration.ofSeconds(1L)).filter(this::isError));
+    } catch (IllegalStateException e) {
+      if (isRetryExhausted(e)) {
+        return Mono.error(e);
+      } else {
+        throw new IllegalStateException("Unexpected Exception occurred during Steam API request");
+      }
     }
+  }
 
-    public Mono<String> getFromApi(String itemName) {
-        log.info("Starting api request for item: " + itemName);
-
-        return client
-                .get()
-                .uri(path + itemName)
-                .retrieve()
-                .bodyToMono(String.class)
-                .doOnSubscribe(s -> log.info(SteamInventoryTrackerApplication.COUNTER.incrementAndGet() + " - " + LocalDateTime.now()
-                        + " - call triggered"))
-                .transformDeferred(RateLimiterOperator.of(rateLimiter))
-                .retryWhen(Retry.backoff(10, Duration.ofSeconds(30L)).filter(this::is5xxServerError));
-    }
-
-    private boolean is5xxServerError(Throwable throwable) {
-        return ((WebClientResponseException) throwable).getStatusCode().is4xxClientError();
-    }
+  private boolean isError(Throwable throwable) {
+    return ((WebClientResponseException) throwable).getStatusCode().isError();
+  }
 }
