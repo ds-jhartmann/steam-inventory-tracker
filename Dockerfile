@@ -1,4 +1,4 @@
-FROM maven:3-openjdk-17-slim AS maven
+FROM maven:3-eclipse-temurin-21-alpine AS maven
 
 WORKDIR /build
 
@@ -11,7 +11,7 @@ RUN --mount=type=cache,target=/root/.m2 mvn -B clean package -am -DskipTests
 
 
 # Copy the jar and build image
-FROM eclipse-temurin:19-jre-alpine AS steam-inventory-tracker
+FROM eclipse-temurin:21-jre-alpine AS steam-inventory-tracker
 
 ARG UID=10000
 ARG GID=1000
