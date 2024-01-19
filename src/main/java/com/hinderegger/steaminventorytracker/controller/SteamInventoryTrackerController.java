@@ -94,7 +94,7 @@ public class SteamInventoryTrackerController {
     return ResponseEntity.ok("Started Steam Market Request.");
   }
 
-  @Scheduled(cron = "0 0 */3 * * *") // Every 3 hours
+  @Scheduled(cron = "${scheduler.request}")
   private void startSteamMarketQueryScheduled() {
     log.info("Starting scheduled Steam Market Request.");
     CompletableFuture.runAsync(steamInventoryTrackerService::requestItemsSync);
