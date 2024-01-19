@@ -8,7 +8,7 @@ import com.hinderegger.steaminventorytracker.configuration.SteamConfiguration;
 import com.hinderegger.steaminventorytracker.model.Item;
 import com.hinderegger.steaminventorytracker.repository.ItemRepository;
 import com.hinderegger.steaminventorytracker.service.SteamInventoryTrackerService;
-import com.hinderegger.steaminventorytracker.service.SteamMarketAPICallerService;
+import com.hinderegger.steaminventorytracker.service.SteamMarketAPIClient;
 import java.io.IOException;
 import java.net.http.HttpClient;
 import java.net.http.HttpResponse;
@@ -33,19 +33,18 @@ class RepositoryTest {
 
   @Autowired private ItemRepository itemRepository;
   private SteamInventoryTrackerService testee;
-  private SteamMarketAPICallerService steamMock;
+  private SteamMarketAPIClient steamMock;
   private HttpClient httpClientMock;
-  private SteamConfiguration steamConfig;
 
   @BeforeEach
   void setUp() {
-    steamMock = mock(SteamMarketAPICallerService.class);
-    steamConfig = mock(SteamConfiguration.class);
-    httpClientMock = mock(HttpClient.class);
+    steamMock = mock(SteamMarketAPIClient.class);
+    SteamConfiguration steamConfig = new SteamConfiguration();
+    steamConfig.setBaseurl("http://local.test");
+    steamConfig.setPath("/test?query=");
+    steamConfig.setSleepDuration(1);
 
-    when(steamConfig.getBaseurl()).thenReturn("http://local.test");
-    when(steamConfig.getPath()).thenReturn("/test?query=");
-    when(steamConfig.getSleepDuration()).thenReturn(1);
+    httpClientMock = mock(HttpClient.class);
 
     testee =
         new SteamInventoryTrackerService(itemRepository, steamMock, steamConfig, httpClientMock);

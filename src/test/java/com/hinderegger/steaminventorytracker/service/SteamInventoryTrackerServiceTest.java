@@ -24,17 +24,16 @@ class SteamInventoryTrackerServiceTest {
 
   private SteamInventoryTrackerService testee;
   private HttpClient httpClient;
-  private ItemRepository itemRepository;
-  private SteamMarketAPICallerService steamMock;
+  private SteamMarketAPIClient steamMock;
 
   @BeforeEach
   void setUp() {
-    steamMock = mock(SteamMarketAPICallerService.class);
-    var steamConfig = new SteamConfiguration();
+    steamMock = mock(SteamMarketAPIClient.class);
+    final SteamConfiguration steamConfig = new SteamConfiguration();
     steamConfig.setBaseurl("http://local.test");
     steamConfig.setPath("/test?query=");
     steamConfig.setSleepDuration(1);
-    itemRepository = mock(ItemRepository.class);
+    ItemRepository itemRepository = mock(ItemRepository.class);
     httpClient = mock(HttpClient.class);
     testee = new SteamInventoryTrackerService(itemRepository, steamMock, steamConfig, httpClient);
 

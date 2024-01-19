@@ -22,9 +22,9 @@ import org.springframework.web.reactive.function.client.*;
 import reactor.core.publisher.Mono;
 
 @ExtendWith(MockitoExtension.class)
-class SteamMarketAPICallerServiceTest {
+class SteamMarketAPIClientTest {
 
-  private SteamMarketAPICallerService testee;
+  private SteamMarketAPIClient testee;
   @Mock private ExchangeFunction exchangeFunction;
 
   @BeforeEach
@@ -39,7 +39,7 @@ class SteamMarketAPICallerServiceTest {
                 .limitForPeriod(1)
                 .timeoutDuration(Duration.ofSeconds(6L))
                 .build());
-    testee = new SteamMarketAPICallerService(webClient, rateLimiter, "?market_hash_name=");
+    testee = new SteamMarketAPIClient(webClient, rateLimiter, "?market_hash_name=");
   }
 
   @Test

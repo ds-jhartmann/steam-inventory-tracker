@@ -26,7 +26,7 @@ import reactor.core.publisher.Mono;
 @RequiredArgsConstructor
 public class SteamInventoryTrackerService {
   private final ItemRepository itemRepository;
-  private final SteamMarketAPICallerService steamMarketAPICallerService;
+  private final SteamMarketAPIClient steamMarketAPIClient;
   private final SteamConfiguration steamConfig;
   private final HttpClient httpClient;
 
@@ -124,6 +124,6 @@ public class SteamInventoryTrackerService {
   }
 
   private Mono<String> callSteamAPI(Item item) {
-    return steamMarketAPICallerService.getPriceForItem(item);
+    return steamMarketAPIClient.getPriceForItem(item);
   }
 }

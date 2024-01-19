@@ -18,7 +18,7 @@ import static reactor.core.Exceptions.isRetryExhausted;
 
 @Slf4j
 @Service
-public class SteamMarketAPICallerService {
+public class SteamMarketAPIClient {
 
   private final WebClient client;
 
@@ -26,7 +26,7 @@ public class SteamMarketAPICallerService {
 
   private final String path;
 
-  public SteamMarketAPICallerService(
+  public SteamMarketAPIClient(
       final WebClient client,
       final RateLimiter rateLimiter,
       final @Value("${steam.path}") String path) {
