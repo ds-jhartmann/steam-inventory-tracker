@@ -2,34 +2,41 @@ package com.hinderegger.steaminventorytracker.configuration;
 
 import io.github.resilience4j.ratelimiter.RateLimiter;
 import io.github.resilience4j.ratelimiter.RateLimiterConfig;
-import org.springframework.beans.factory.annotation.Value;
+import java.net.http.HttpClient;
+import lombok.AllArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.web.reactive.function.client.WebClient;
 
-import java.time.Duration;
-
 @Configuration
+@AllArgsConstructor
 public class ApplicationConfig {
 
-    @Value("${steam.baseurl}")
-    private String baseUrl;
+  private final SteamConfiguration config;
 
-    @Bean(name = "steamWebClient")
-    public WebClient steamWebClient() {
-        return WebClient.builder().baseUrl(baseUrl).defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE).build();
-    }
+  @Bean
+  public WebClient steamWebClient() {
+    return WebClient.builder()
+        .baseUrl(config.getBaseurl())
+        .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+        .build();
+  }
 
-    @Bean(name = "steamRateLimiter")
-    public RateLimiter steamRateLimiter() {
-        return RateLimiter.of("steam-rate-limiter",
-                RateLimiterConfig
-                        .custom()
-                        .limitRefreshPeriod(Duration.ofSeconds(30L))
-                        .limitForPeriod(1)
-                        .timeoutDuration(Duration.ofMinutes(10L))
-                        .build());
-    }
+  @Bean
+  public RateLimiter steamRateLimiter() {
+    return RateLimiter.of(
+        "steam-rate-limiter",
+        RateLimiterConfig.custom()
+            .limitRefreshPeriod(config.getLimitRefreshPeriod())
+            .limitForPeriod(config.getLimitForPeriod())
+            .timeoutDuration(config.getTimeoutDuration())
+            .build());
+  }
+
+  @Bean
+  public HttpClient httpClient() {
+    return HttpClient.newHttpClient();
+  }
 }
