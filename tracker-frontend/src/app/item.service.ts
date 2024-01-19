@@ -9,7 +9,7 @@ import {catchError, tap} from 'rxjs/operators';
   providedIn: 'root'
 })
 export class ItemService {
-  private baseUrl = 'http://localhost:8080/api/v1/items';
+  private baseUrl = 'http://localhost:4200/api/v1/items';
   private getItemPath = '/getItem?name='
   private getAllItemsPath = '/all'
 
