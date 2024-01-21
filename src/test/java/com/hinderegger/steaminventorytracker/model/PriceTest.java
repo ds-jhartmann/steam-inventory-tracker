@@ -1,16 +1,15 @@
 package com.hinderegger.steaminventorytracker.model;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.*;
 
-import com.hinderegger.steaminventorytracker.PriceHistoryException;
-import com.hinderegger.steaminventorytracker.PriceTrend;
+import com.hinderegger.steaminventorytracker.service.PriceHistoryException;
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 
-class PriceParserTest {
+class PriceTest {
 
   @Test
   void shouldReturnOnlyPrice() throws PriceHistoryException {
@@ -48,7 +47,7 @@ class PriceParserTest {
     Item item = new Item("Item 1", priceHistory);
 
     // Act & Assert
-    assertThatThrownBy(item::getLatestPrice).isInstanceOf(PriceHistoryException.class);
+    assertThatException().isThrownBy(item::getLatestPrice).isInstanceOf(PriceHistoryException.class);
   }
 
   @Test
@@ -205,6 +204,89 @@ class PriceParserTest {
     Item item = new Item("Item 1", priceHistory);
 
     // Act & Assert
-    assertThatThrownBy(item::calculatePriceTrendByDay).isInstanceOf(PriceHistoryException.class);
+    assertThatException().isThrownBy(item::calculatePriceTrendByDay).isInstanceOf(PriceHistoryException.class);
+  }
+
+  @Test
+  void shouldCalculate7DayPriceTrend() throws PriceHistoryException {
+    // Arrange
+    List<Price> priceHistory =
+        new ArrayList<>(
+            List.of(
+                new Price(1.69, 2.77, LocalDateTime.parse("2023-03-02T14:36:04.615")),
+                new Price(2.67, 2.77, LocalDateTime.parse("2023-03-02T15:00:00.313")),
+                new Price(2.77, 2.79, LocalDateTime.parse("2023-03-02T19:24:46.507")),
+                new Price(2.56, 2.62, LocalDateTime.parse("2023-03-09T11:45:32.497")),
+                new Price(2.56, 2.62, LocalDateTime.parse("2023-03-09T12:00:00.263"))));
+    Item item = new Item("Item 1", priceHistory);
+
+    // Act
+    PriceTrend priceTrend7Days = item.calculatePriceTrendByDay(7, ChronoUnit.DAYS);
+
+    // Assert
+    PriceTrend expectedPriceTrend = new PriceTrend(0.18, 0.0756, -0.16, -0.0576);
+    assertThat(priceTrend7Days).isEqualTo(expectedPriceTrend);
+  }
+
+  @Test
+  void shouldCalculate7DayPriceTrendWithSmallerGap() throws PriceHistoryException {
+    // Arrange
+    List<Price> priceHistory =
+        new ArrayList<>(
+            List.of(
+                new Price(1.69, 2.77, LocalDateTime.parse("2023-03-05T14:36:04.615")),
+                new Price(2.67, 2.77, LocalDateTime.parse("2023-03-05T15:00:00.313")),
+                new Price(2.77, 2.79, LocalDateTime.parse("2023-03-05T19:24:46.507")),
+                new Price(2.56, 2.62, LocalDateTime.parse("2023-03-09T11:45:32.497")),
+                new Price(2.56, 2.62, LocalDateTime.parse("2023-03-09T12:00:00.263"))));
+    Item item = new Item("Item 1", priceHistory);
+
+    // Act
+    PriceTrend priceTrend7Days = item.calculatePriceTrendByDay(7, ChronoUnit.DAYS);
+
+    // Assert
+    PriceTrend expectedPriceTrend = new PriceTrend(0.18, 0.0756, -0.16, -0.0576);
+    assertThat(priceTrend7Days).isEqualTo(expectedPriceTrend);
+  }
+
+  @Test
+  void shouldCalculate7DayPriceTrendWithIntermediateValues() throws PriceHistoryException {
+    // Arrange
+    List<Price> priceHistory =
+        new ArrayList<>(
+            List.of(
+                new Price(1.69, 2.77, LocalDateTime.parse("2023-03-02T14:36:04.615")),
+                new Price(2.67, 2.77, LocalDateTime.parse("2023-03-02T15:00:00.313")),
+                new Price(2.77, 2.79, LocalDateTime.parse("2023-03-02T19:24:46.507")),
+                new Price(3.00, 2.79, LocalDateTime.parse("2023-03-03T19:24:46.507")),
+                new Price(3.01, 2.79, LocalDateTime.parse("2023-03-04T19:24:46.507")),
+                new Price(2.56, 2.62, LocalDateTime.parse("2023-03-09T11:45:32.497")),
+                new Price(2.56, 2.62, LocalDateTime.parse("2023-03-09T12:00:00.263"))));
+    Item item = new Item("Item 1", priceHistory);
+
+    // Act
+    PriceTrend priceTrend7Days = item.calculatePriceTrendByDay(7, ChronoUnit.DAYS);
+
+    // Assert
+    PriceTrend expectedPriceTrend = new PriceTrend(0.18, 0.0756, -0.16, -0.0576);
+    assertThat(priceTrend7Days).isEqualTo(expectedPriceTrend);
+  }
+
+  @Test
+  void shouldThrowExceptionForLargerGap() {
+    // Arrange
+    List<Price> priceHistory =
+        new ArrayList<>(
+            List.of(
+                new Price(1.69, 2.77, LocalDateTime.parse("2023-03-01T14:36:04.615")),
+                new Price(2.67, 2.77, LocalDateTime.parse("2023-03-01T15:00:00.313")),
+                new Price(2.77, 2.79, LocalDateTime.parse("2023-03-01T19:24:46.507")),
+                new Price(2.56, 2.62, LocalDateTime.parse("2023-03-09T11:45:32.497")),
+                new Price(2.56, 2.62, LocalDateTime.parse("2023-03-09T12:00:00.263"))));
+    Item item = new Item("Item 1", priceHistory);
+
+    // Act && Assert
+    assertThatException().isThrownBy(() -> item.calculatePriceTrendByDay(7, ChronoUnit.DAYS))
+        .isInstanceOf(PriceHistoryException.class).withMessage("There is no Price within 7 Days prior to the latest Price.");
   }
 }

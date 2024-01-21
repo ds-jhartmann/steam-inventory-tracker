@@ -1,4 +1,4 @@
-package com.hinderegger.steaminventorytracker;
+package com.hinderegger.steaminventorytracker.model;
 
 public record PriceTrend(
     double absolutePriceChange,

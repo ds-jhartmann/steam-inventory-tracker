@@ -1,4 +1,4 @@
-package com.hinderegger.steaminventorytracker;
+package com.hinderegger.steaminventorytracker.service;
 
 import com.hinderegger.steaminventorytracker.model.Item;
 import java.util.ArrayList;

@@ -1,14 +1,14 @@
 package com.hinderegger.steaminventorytracker;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import com.hinderegger.steaminventorytracker.model.Item;
 import com.hinderegger.steaminventorytracker.model.Price;
-import org.junit.jupiter.api.Test;
-
+import com.hinderegger.steaminventorytracker.service.CSVExporter;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-
-import static org.assertj.core.api.Assertions.assertThat;
+import org.junit.jupiter.api.Test;
 
 class CSVExporterTest {
 
@@ -80,7 +80,9 @@ class CSVExporterTest {
     // Act
     String csv = CSVExporter.createCSV(items);
     // Assert
-    assertThat(csv).isEqualTo("""
+    assertThat(csv)
+        .isEqualTo(
+            """
       name,price,median,
       Item 1,"0,2€","0,3€",
       Item 2,"0,4€","0,5€\"""");

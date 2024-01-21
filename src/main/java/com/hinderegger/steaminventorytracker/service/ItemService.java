@@ -2,8 +2,10 @@ package com.hinderegger.steaminventorytracker.service;
 
 import com.hinderegger.steaminventorytracker.model.Item;
 import com.hinderegger.steaminventorytracker.model.Price;
+import com.hinderegger.steaminventorytracker.model.PriceTrend;
 import com.hinderegger.steaminventorytracker.repository.ItemRepository;
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Optional;
 import lombok.AllArgsConstructor;
@@ -19,7 +21,7 @@ public class ItemService {
 
   private final ItemRepository itemRepository;
 
-  public Item addItem(Item item) {
+  public Item addItem(final Item item) {
     final String itemName = item.getItemName();
     if (itemRepository.findById(itemName).isEmpty()) {
       log.info("Adding Item '{}'.", itemName);
@@ -31,16 +33,16 @@ public class ItemService {
     }
   }
 
-  public Item addItem(String itemName) {
+  public Item addItem(final String itemName) {
     final Item item = new Item(itemName, List.of());
     return addItem(item);
   }
 
-  public List<Item> addItems(List<Item> items) {
+  public List<Item> addItems(final List<Item> items) {
     return itemRepository.insert(items);
   }
 
-  public Item updatePriceForItem(String name, double price, double median) {
+  public Item updatePriceForItem(final String name, final double price, final double median) {
     final Optional<Item> itemByName = itemRepository.findById(name);
     if (itemByName.isPresent()) {
       final Price price1 = new Price(price, median, LocalDateTime.now());
@@ -53,7 +55,7 @@ public class ItemService {
     }
   }
 
-  public Item getItemByName(String name) {
+  public Item getItemByName(final String name) {
     final Optional<Item> itemByName = itemRepository.findById(name);
     return itemByName.orElseThrow(
         () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "No job exists with id " + name));
@@ -61,5 +63,19 @@ public class ItemService {
 
   public List<Item> getAllItems() {
     return itemRepository.findAll();
+  }
+
+  public PriceTrend getPriceTrendForItem(
+      final String name, final int timespan, final ChronoUnit chronoUnit) {
+    final Item item = getItemByName(name);
+    try {
+      return item.calculatePriceTrendByDay(timespan, chronoUnit);
+    } catch (PriceHistoryException e) {
+      throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage());
+    }
+  }
+
+  public List<Price> getPriceHistoryForItem(final String name) {
+    return getItemByName(name).calculateAverageAndMedianPricesPerDay();
   }
 }

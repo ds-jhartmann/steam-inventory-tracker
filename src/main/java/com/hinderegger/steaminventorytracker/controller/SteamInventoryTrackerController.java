@@ -2,19 +2,21 @@ package com.hinderegger.steaminventorytracker.controller;
 
 import static com.hinderegger.steaminventorytracker.SteamInventoryTrackerApplication.API_PATH;
 
-import com.hinderegger.steaminventorytracker.CSVExporter;
-import com.hinderegger.steaminventorytracker.PriceHistoryException;
 import com.hinderegger.steaminventorytracker.model.BuyInfo;
 import com.hinderegger.steaminventorytracker.model.Item;
+import com.hinderegger.steaminventorytracker.model.Price;
+import com.hinderegger.steaminventorytracker.model.PriceTrend;
 import com.hinderegger.steaminventorytracker.service.BuyInfoService;
+import com.hinderegger.steaminventorytracker.service.CSVExporter;
 import com.hinderegger.steaminventorytracker.service.ItemService;
+import com.hinderegger.steaminventorytracker.service.PriceHistoryException;
 import com.hinderegger.steaminventorytracker.service.SteamInventoryTrackerService;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -49,7 +51,8 @@ public class SteamInventoryTrackerController {
 
   @PostMapping(path = "/registerBuyInfos")
   public ResponseEntity<List<BuyInfo>> registerBuyInfos(@RequestBody final List<BuyInfo> buyInfos) {
-    List<BuyInfo> addedBuyInfos = buyInfoService.addBuyInfos(buyInfos);
+    log.info("Adding {} buy infos", buyInfos.size());
+    final List<BuyInfo> addedBuyInfos = buyInfoService.addBuyInfos(buyInfos);
     return ResponseEntity.ok(addedBuyInfos);
   }
 
@@ -80,10 +83,9 @@ public class SteamInventoryTrackerController {
   }
 
   @GetMapping(path = "/all")
-  @ResponseStatus(HttpStatus.OK)
   public ResponseEntity<List<Item>> getAllItems() {
     log.info("Returning all Items.");
-    List<Item> allItems = itemService.getAllItems();
+    final List<Item> allItems = itemService.getAllItems();
     return ResponseEntity.ok(allItems);
   }
 
@@ -101,8 +103,7 @@ public class SteamInventoryTrackerController {
   }
 
   @GetMapping(path = "/getTotalValue")
-  @ResponseStatus(HttpStatus.OK)
-  public double getTotalInventoryValue() {
+  public ResponseEntity<Double> getTotalInventoryValue() {
 
     final List<BuyInfo> allBuyInfos = buyInfoService.getAllBuyInfos();
     double total = 0.0;
@@ -115,15 +116,31 @@ public class SteamInventoryTrackerController {
         log.error(e.getMessage());
       }
     }
-    return total;
+    return ResponseEntity.ok(total);
   }
 
   @GetMapping(path = "/exportAsCSV", produces = "text/csv")
-  @ResponseStatus(HttpStatus.OK)
   public ResponseEntity<String> getAllCurrentItemsAsCSV() {
     log.info("Exporting latest prices as CSV.");
-    List<Item> items = itemService.getAllItems();
-    String csv = CSVExporter.createCSV(items);
+    final List<Item> items = itemService.getAllItems();
+    final String csv = CSVExporter.createCSV(items);
     return ResponseEntity.ok(csv);
+  }
+
+  @GetMapping(path = "/priceTrend")
+  public ResponseEntity<PriceTrend> getPriceTrendForItem(
+      @RequestParam final String name,
+      @RequestParam final int timespan,
+      @RequestParam final ChronoUnit chronoUnit) {
+    log.info("Returning PriceTrend for last {} {} of Item '{}'", timespan, chronoUnit, name);
+    final PriceTrend priceTrend = itemService.getPriceTrendForItem(name, timespan, chronoUnit);
+    return ResponseEntity.ok(priceTrend);
+  }
+
+  @GetMapping(path = "/priceHistory")
+  public ResponseEntity<List<Price>> getPriceHistoryForItem(@RequestParam final String name) {
+    log.info("Returning averaged price history for Item '{}'", name);
+    final List<Price> priceHistoryForItem = itemService.getPriceHistoryForItem(name);
+    return ResponseEntity.ok(priceHistoryForItem);
   }
 }
