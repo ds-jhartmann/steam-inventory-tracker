@@ -1,7 +1,6 @@
 package com.hinderegger.steaminventorytracker;
 
 import com.hinderegger.steaminventorytracker.model.Item;
-
 import java.util.ArrayList;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
@@ -26,14 +25,14 @@ public class CSVExporter {
     String latestPrice;
     String medianPrice;
     try {
-      latestPrice = (PriceParser.getLatestPriceFromItem(item).getPrice() + "€").replace(".", ",");
-    } catch (Exception e) {
+      latestPrice = (item.getLatestPrice().getPrice() + "€").replace(".", ",");
+    } catch (PriceHistoryException e) {
       log.error("Exception while parsing Price", e);
       latestPrice = "0,00€";
     }
     try {
-      medianPrice = (PriceParser.getLatestPriceFromItem(item).getMedian() + "€").replace(".", ",");
-    } catch (Exception e) {
+      medianPrice = (item.getLatestPrice().getMedian() + "€").replace(".", ",");
+    } catch (PriceHistoryException e) {
       log.error("Exception while parsing Price", e);
       medianPrice = "0,00€";
     }

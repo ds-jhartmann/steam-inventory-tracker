@@ -3,7 +3,7 @@ package com.hinderegger.steaminventorytracker.controller;
 import static com.hinderegger.steaminventorytracker.SteamInventoryTrackerApplication.API_PATH;
 
 import com.hinderegger.steaminventorytracker.CSVExporter;
-import com.hinderegger.steaminventorytracker.PriceParser;
+import com.hinderegger.steaminventorytracker.PriceHistoryException;
 import com.hinderegger.steaminventorytracker.model.BuyInfo;
 import com.hinderegger.steaminventorytracker.model.Item;
 import com.hinderegger.steaminventorytracker.service.BuyInfoService;
@@ -110,8 +110,8 @@ public class SteamInventoryTrackerController {
       final String itemName = buyInfo.getItemName();
       final Item itemByName = itemService.getItemByName(itemName);
       try {
-        total += PriceParser.getLatestPriceFromItem(itemByName).getPrice() * buyInfo.getAmount();
-      } catch (final Exception e) {
+        total += itemByName.getLatestPrice().getPrice() * buyInfo.getAmount();
+      } catch (final PriceHistoryException e) {
         log.error(e.getMessage());
       }
     }
