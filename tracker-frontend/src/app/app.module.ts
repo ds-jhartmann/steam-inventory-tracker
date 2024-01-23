@@ -11,6 +11,14 @@ import { DashboardComponent } from './dashboard/dashboard.component';
 import {HttpClientModule} from "@angular/common/http";
 import { PriceGraphComponent } from './price-graph/price-graph.component';
 import {NgApexchartsModule} from "ng-apexcharts";
+import {registerLocaleData} from "@angular/common";
+import localeDe from '@angular/common/locales/de';
+import localeDeExtra from '@angular/common/locales/extra/de';
+import { NoopAnimationsModule } from '@angular/platform-browser/animations';
+import {MatTabsModule} from "@angular/material/tabs";
+
+
+registerLocaleData(localeDe, 'de-DE', localeDeExtra);
 
 @NgModule({
   declarations: [
@@ -28,7 +36,9 @@ import {NgApexchartsModule} from "ng-apexcharts";
     AppRoutingModule,
     HttpClientModule,
     ReactiveFormsModule,
-    NgApexchartsModule
+    NgApexchartsModule,
+    NoopAnimationsModule,
+    MatTabsModule
   ],
   providers: [],
   bootstrap: [AppComponent]

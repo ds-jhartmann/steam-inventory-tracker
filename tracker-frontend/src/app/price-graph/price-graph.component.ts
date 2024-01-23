@@ -8,7 +8,7 @@ import {
   ApexXAxis,
   ApexYAxis
 } from "ng-apexcharts";
-import {Item} from "../items/item";
+import {PriceHistory} from "../items/priceHistory";
 
 @Component({
   selector: 'app-price-graph',
@@ -24,13 +24,14 @@ export class PriceGraphComponent implements OnInit {
   public xaxis!: ApexXAxis;
   public tooltip!: ApexTooltip;
 
-  @Input() item?: Item;
+  @Input() itemName?: string;
+  @Input() priceHistory?: PriceHistory[];
 
   public initChartData(): void {
     let prices: ({ x: string; y: number; })[] = [];
     let median: { x: string; y: number; }[] = [];
-    this.item?.priceHistory.forEach(value => prices.push(this.createEntry(value.timestamp, value.price)));
-    this.item?.priceHistory.forEach(value => median.push(this.createEntry(value.timestamp, value.median)));
+    this.priceHistory?.forEach(value => prices.push(this.createEntry(value.timestamp.replace("T00:00:00", ""), value.price)));
+    this.priceHistory?.forEach(value => median.push(this.createEntry(value.timestamp.replace("T00:00:00", ""), value.median)));
 
     this.series = [
       {
@@ -58,7 +59,7 @@ export class PriceGraphComponent implements OnInit {
     };
 
     this.title = {
-      text: this.item?.itemName
+      text: this.itemName
     };
     this.fill = {
       type: "gradient",

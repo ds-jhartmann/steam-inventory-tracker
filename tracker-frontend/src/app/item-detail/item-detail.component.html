@@ -1,5 +1,22 @@
-<div *ngIf="item">
-  <h2>{{item.itemName | uppercase}} Details</h2>
-  <app-price-graph [item]="item"></app-price-graph>
+<div>
+  <h2 *ngIf="item">{{ item.itemName | uppercase }} Details</h2>
+  <div *ngIf="priceTrend1">
+    <h3>1 Day</h3>
+    <p>{{ priceTrend1.absolutePriceChange | currency:'EUR':'symbol':'1.2-2':'de-DE' }}</p>
+    <p>{{ priceTrend1.percentagePriceChange | percent:'1.2-2' }}</p>
+  </div>
+  <div *ngIf="priceTrend7">
+    <h3>7 Days</h3>
+    <p>{{ priceTrend7.absolutePriceChange | currency:'EUR':'symbol':'1.2-2':'de-DE' }}</p>
+    <p>{{ priceTrend7.percentagePriceChange | percent:'1.2-2' }}</p>
+  </div>
+  <div *ngIf="priceTrend30">
+    <h3>30 Days</h3>
+    <p>{{ priceTrend30.absolutePriceChange | currency:'EUR':'symbol':'1.2-2':'de-DE' }}</p>
+    <p>{{ priceTrend30.percentagePriceChange | percent:'1.2-2' }}</p>
+  </div>
+  <div *ngIf="item && priceHistory">
+    <app-price-graph [itemName]="item.itemName" [priceHistory]="priceHistory"></app-price-graph>
+  </div>
 </div>
 <button type="button" (click)="goBack()">go back</button>

@@ -1,6 +1,8 @@
 import {Component, OnInit} from '@angular/core';
-import {Item} from "../items/item";
 import {ItemService} from "../item.service";
+import {MessageService} from "../message.service";
+import {PriceTrendItem} from "../items/PriceTrendItem";
+import {forkJoin, map} from "rxjs";
 
 @Component({
   selector: 'app-dashboard',
@@ -8,9 +10,10 @@ import {ItemService} from "../item.service";
   styleUrls: ['./dashboard.component.css']
 })
 export class DashboardComponent implements OnInit {
-  items: Item[] = [];
+  priceTrendItems: PriceTrendItem[] = [];
+  priceTrendItemsAbsolute: PriceTrendItem[] = [];
 
-  constructor(private itemService: ItemService) {
+  constructor(private itemService: ItemService, private messageService: MessageService) {
   }
 
   ngOnInit(): void {
@@ -20,14 +23,36 @@ export class DashboardComponent implements OnInit {
   getItems(): void {
     this.itemService.getItems()
       .subscribe(items => {
-        items.sort((a, b) => {
-          const price1 = a.priceHistory.at(a.priceHistory.length - 1)!.price;
-          const price2 = b.priceHistory.at(b.priceHistory.length - 1)!.price;
-          if (price2 > price1) return 1;
-          if (price2 < price1) return -1;
-          return 0;
-        });
-        this.items = items.slice(1, 5)
+        const priceTrendObservables = items.map(item =>
+          this.itemService.getPriceTrend(item.itemName, 1, "DAYS")
+            .pipe(map(priceTrend => ({itemName: item.itemName, priceTrend: priceTrend})))
+        );
+        forkJoin(priceTrendObservables).subscribe(priceTrends => {
+          priceTrends.sort((a, b) => {
+            const trend1 = a.priceTrend.percentagePriceChange;
+            const trend2 = b.priceTrend.percentagePriceChange;
+            if (trend2 > trend1) return 1;
+            if (trend2 < trend1) return -1;
+            return 0;
+          });
+          const sortedTrends: PriceTrendItem[] = priceTrends;
+          this.priceTrendItems = sortedTrends.slice(0, 5);
+          this.log(this.priceTrendItems.toString());
+
+          sortedTrends.sort((a, b) => {
+            const trend1 = a.priceTrend.absolutePriceChange;
+            const trend2 = b.priceTrend.absolutePriceChange;
+            if (trend2 > trend1) return 1;
+            if (trend2 < trend1) return -1;
+            return 0;
+          });
+          this.priceTrendItemsAbsolute = sortedTrends.slice(0, 5);
+          this.log(this.priceTrendItemsAbsolute.toString());
+        })
       });
+  }
+
+  private log(message: string) {
+    this.messageService.add(`Dashboard: ${message}`);
   }
 }

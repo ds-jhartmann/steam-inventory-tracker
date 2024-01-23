@@ -1,6 +1,13 @@
 <h2>Top Items</h2>
-<div class="items-menu">
-  <a *ngFor="let item of items" routerLink="/detail/{{item.itemName}}">
-    {{item.itemName}}
+<div class="items-menu" *ngIf="priceTrendItems">
+  <a *ngFor="let priceTrendItem of priceTrendItems" routerLink="/detail/{{priceTrendItem.itemName}}">
+    <p>{{ priceTrendItem.itemName }}</p>
+    <p>{{ priceTrendItem.priceTrend.percentagePriceChange | percent:'1.2-2' }}</p>
+    <p>{{ priceTrendItem.priceTrend.absolutePriceChange | currency:'EUR':'symbol':'1.2-2':'de-DE' }}</p>
+  </a>
+  <a *ngFor="let priceTrendItem of priceTrendItemsAbsolute" routerLink="/detail/{{priceTrendItem.itemName}}">
+    <p>{{ priceTrendItem.itemName }}</p>
+    <p>{{ priceTrendItem.priceTrend.absolutePriceChange | currency:'EUR':'symbol':'1.2-2':'de-DE' }}</p>
+    <p>{{ priceTrendItem.priceTrend.percentagePriceChange | percent:'1.2-2' }}</p>
   </a>
 </div>
