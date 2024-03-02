@@ -23,7 +23,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
         <!-- Dependencies -->
-        <resilience4j.version>2.1.0</resilience4j.version>
+        <resilience4j.version>2.2.0</resilience4j.version>
         <json.version>20231013</json.version>
         <testcontainers.version>1.19.3</testcontainers.version>
 
