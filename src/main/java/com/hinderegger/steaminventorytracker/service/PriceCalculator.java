@@ -4,7 +4,9 @@ import com.hinderegger.steaminventorytracker.model.Price;
 import com.hinderegger.steaminventorytracker.model.PriceTrend;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 public class PriceCalculator {
   private PriceCalculator() {}
 
@@ -16,8 +18,14 @@ public class PriceCalculator {
     return BigDecimal.valueOf(value).setScale(4, RoundingMode.HALF_UP).doubleValue();
   }
 
-  private static double getPercentageChange(final double absoluteChange, final double previousPrice) {
-    return absoluteChange / previousPrice;
+  private static double getPercentageChange(
+      final double absoluteChange, final double previousPrice) {
+    double result = absoluteChange / previousPrice;
+    if (Double.valueOf(result).isInfinite() || Double.valueOf(result).isNaN()) {
+      log.warn("Result is not a number or infinite, returning 0.");
+      return 0;
+    }
+    return result;
   }
 
   private static double getAbsoluteChange(final double latestPrice, final double previousPrice) {
