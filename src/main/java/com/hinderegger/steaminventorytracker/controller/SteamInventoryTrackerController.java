@@ -12,7 +12,6 @@ import com.hinderegger.steaminventorytracker.service.ItemService;
 import com.hinderegger.steaminventorytracker.service.PriceHistoryException;
 import com.hinderegger.steaminventorytracker.service.SteamInventoryTrackerService;
 import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import lombok.AllArgsConstructor;
@@ -58,11 +57,8 @@ public class SteamInventoryTrackerController {
 
   @PostMapping(path = "/addItems", consumes = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<List<Item>> addNewItems(@RequestBody final List<Item> items) {
-    final ArrayList<Item> returnItems = new ArrayList<>();
-    for (final Item item : items) {
-      returnItems.add(itemService.addItem(item));
-    }
-    return ResponseEntity.ok(returnItems);
+    log.info("Adding '{}' new items.", items.size());
+    return ResponseEntity.ok(itemService.addItems(items));
   }
 
   @PostMapping(path = "/updatePrice")
@@ -87,6 +83,13 @@ public class SteamInventoryTrackerController {
     log.info("Returning all Items.");
     final List<Item> allItems = itemService.getAllItems();
     return ResponseEntity.ok(allItems);
+  }
+
+  @GetMapping(path = "/allNames")
+  public ResponseEntity<List<String>> getAllItemNames() {
+    log.info("Returning all Items.");
+    final List<Item> allItems = itemService.getAllItems();
+    return ResponseEntity.ok(allItems.stream().map(Item::getItemName).toList());
   }
 
   @GetMapping(path = "/startSteamMarketRequest")

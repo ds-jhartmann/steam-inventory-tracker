@@ -47,7 +47,9 @@ class PriceTest {
     Item item = new Item("Item 1", priceHistory);
 
     // Act & Assert
-    assertThatException().isThrownBy(item::getLatestPrice).isInstanceOf(PriceHistoryException.class);
+    assertThatException()
+        .isThrownBy(item::getLatestPrice)
+        .isInstanceOf(PriceHistoryException.class);
   }
 
   @Test
@@ -204,7 +206,9 @@ class PriceTest {
     Item item = new Item("Item 1", priceHistory);
 
     // Act & Assert
-    assertThatException().isThrownBy(item::calculatePriceTrendByDay).isInstanceOf(PriceHistoryException.class);
+    assertThatException()
+        .isThrownBy(item::calculatePriceTrendByDay)
+        .isInstanceOf(PriceHistoryException.class);
   }
 
   @Test
@@ -286,7 +290,9 @@ class PriceTest {
     Item item = new Item("Item 1", priceHistory);
 
     // Act && Assert
-    assertThatException().isThrownBy(() -> item.calculatePriceTrendByDay(7, ChronoUnit.DAYS))
-        .isInstanceOf(PriceHistoryException.class).withMessage("There is no Price within 7 Days prior to the latest Price.");
+    assertThatException()
+        .isThrownBy(() -> item.calculatePriceTrendByDay(7, ChronoUnit.DAYS))
+        .isInstanceOf(PriceHistoryException.class)
+        .withMessage("There is no Price within 7 Days prior to the latest Price.");
   }
 }

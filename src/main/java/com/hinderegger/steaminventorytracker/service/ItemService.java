@@ -6,6 +6,7 @@ import com.hinderegger.steaminventorytracker.model.PriceTrend;
 import com.hinderegger.steaminventorytracker.repository.ItemRepository;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import lombok.AllArgsConstructor;
@@ -39,7 +40,11 @@ public class ItemService {
   }
 
   public List<Item> addItems(final List<Item> items) {
-    return itemRepository.insert(items);
+    final ArrayList<Item> returnItems = new ArrayList<>();
+    for (final Item item : items) {
+      returnItems.add(this.addItem(item));
+    }
+    return returnItems;
   }
 
   public Item updatePriceForItem(final String name, final double price, final double median) {

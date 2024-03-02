@@ -1,5 +1,7 @@
 package com.hinderegger.steaminventorytracker.service;
 
+import static reactor.core.Exceptions.isRetryExhausted;
+
 import com.hinderegger.steaminventorytracker.SteamInventoryTrackerApplication;
 import com.hinderegger.steaminventorytracker.model.Item;
 import io.github.resilience4j.ratelimiter.RateLimiter;
@@ -13,8 +15,6 @@ import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.publisher.Mono;
 import reactor.util.retry.Retry;
-
-import static reactor.core.Exceptions.isRetryExhausted;
 
 @Slf4j
 @Service
