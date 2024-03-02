@@ -24,7 +24,7 @@
 
         <!-- Dependencies -->
         <resilience4j.version>2.2.0</resilience4j.version>
-        <json.version>20231013</json.version>
+        <json.version>20240205</json.version>
         <testcontainers.version>1.19.3</testcontainers.version>
 
         <!-- Plugins -->
