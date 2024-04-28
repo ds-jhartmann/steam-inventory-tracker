@@ -1,10 +1,16 @@
-<h2>Top Items</h2>
 <div class="items-menu" *ngIf="priceTrendItems">
+  <h2>Top Items {{timeSpan}}</h2>
+  <button (click)="priceTrend(ChronoUnits.DAYS)">Last Day</button>
+  <button (click)="priceTrend(ChronoUnits.WEEKS)">Last Week</button>
+  <button (click)="priceTrend(ChronoUnits.MONTHS)">Last Month</button>
+  <button (click)="priceTrend(ChronoUnits.YEARS)">Last Year</button>
+  <p>Percentage</p>
   <a *ngFor="let priceTrendItem of priceTrendItems" routerLink="/detail/{{priceTrendItem.itemName}}">
     <p>{{ priceTrendItem.itemName }}</p>
     <p>{{ priceTrendItem.priceTrend.percentagePriceChange | percent:'1.2-2' }}</p>
     <p>{{ priceTrendItem.priceTrend.absolutePriceChange | currency:'EUR':'symbol':'1.2-2':'de-DE' }}</p>
   </a>
+  <p>Absolute</p>
   <a *ngFor="let priceTrendItem of priceTrendItemsAbsolute" routerLink="/detail/{{priceTrendItem.itemName}}">
     <p>{{ priceTrendItem.itemName }}</p>
     <p>{{ priceTrendItem.priceTrend.absolutePriceChange | currency:'EUR':'symbol':'1.2-2':'de-DE' }}</p>

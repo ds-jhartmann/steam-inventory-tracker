@@ -6,12 +6,13 @@ import {HttpClient} from "@angular/common/http";
 import {catchError, tap} from 'rxjs/operators';
 import {PriceHistory} from "./items/priceHistory";
 import {PriceTrend} from "./items/priceTrend";
+import {environment} from "../environments/environment";
 
 @Injectable({
   providedIn: 'root'
 })
 export class ItemService {
-  private baseUrl = 'http://localhost:4200/api/v1/items';
+  private baseUrl = `${environment.apiUrl}/api/v1/items`;
   private getItemPath = '/getItem?name='
   private getPriceHistoryPath = '/priceHistory?name='
   private getAllItemsPath = '/all'
