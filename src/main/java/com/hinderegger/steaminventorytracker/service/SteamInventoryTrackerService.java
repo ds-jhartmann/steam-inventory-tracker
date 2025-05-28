@@ -11,10 +11,8 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
-import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.json.JSONObject;
@@ -29,20 +27,22 @@ public class SteamInventoryTrackerService {
   private final SteamMarketAPIClient steamMarketAPIClient;
   private final SteamConfiguration steamConfig;
   private final HttpClient httpClient;
+  private final TimeProvider timeProvider;
 
   public void requestItems() {
     final List<Item> all = itemRepository.findAll();
     Collections.shuffle(all);
-    final long started = System.currentTimeMillis();
+    final long started = timeProvider.currentTimeMillis();
     all.forEach(this::requestItem);
-    log.info("Elapsed time in seconds: " + (System.currentTimeMillis() - started) / 1000d);
+    log.info("Elapsed time in seconds: " + (timeProvider.currentTimeMillis() - started) / 1000d);
   }
 
   public void requestItemsSync() {
     final List<Item> all = itemRepository.findAll();
-    final long started = System.currentTimeMillis();
+    final long started = timeProvider.currentTimeMillis();
     all.forEach(item -> requestItemSync(httpClient, item));
-    log.info("Elapsed time in minutes: " + (System.currentTimeMillis() - started) / 1000d / 60d);
+    log.info(
+        "Elapsed time in minutes: " + (timeProvider.currentTimeMillis() - started) / 1000d / 60d);
   }
 
   private void requestItemSync(HttpClient httpClient, Item item) {
@@ -61,7 +61,7 @@ public class SteamInventoryTrackerService {
         log.error(
             "Could not get Item: " + item.getItemName() + ". Reason: " + response.statusCode());
       }
-      TimeUnit.SECONDS.sleep(steamConfig.getSleepDuration());
+      timeProvider.sleep(steamConfig.getSleepDuration());
     } catch (final IOException e) {
       log.error("Error while requesting Item.", e);
     } catch (final InterruptedException e) {
@@ -82,7 +82,7 @@ public class SteamInventoryTrackerService {
       }
 
       if (lowestPrice > 0.0) {
-        final Price price = new Price(lowestPrice, medianPrice, LocalDateTime.now());
+        final Price price = new Price(lowestPrice, medianPrice, timeProvider.now());
         log.info("Adding Item: " + price);
         item.addPrice(price);
         itemRepository.save(item);

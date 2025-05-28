@@ -12,7 +12,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.data.mongo.DataMongoTest;
-import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.web.server.ResponseStatusException;
 import org.testcontainers.junit.jupiter.Testcontainers;
@@ -21,14 +20,15 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 @Testcontainers
 @ContextConfiguration(classes = MongoDBTestContainerConfig.class)
 class ItemServiceTest {
-  @Autowired MongoTemplate mongoTemplate;
 
   @Autowired private ItemRepository itemRepository;
   private ItemService testee;
+  private MockTimeProvider mockTimeProvider;
 
   @BeforeEach
   void setUp() {
-    testee = new ItemService(itemRepository);
+    mockTimeProvider = new MockTimeProvider();
+    testee = new ItemService(itemRepository, mockTimeProvider);
   }
 
   @AfterEach

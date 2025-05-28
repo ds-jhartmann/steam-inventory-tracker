@@ -4,7 +4,6 @@ import com.hinderegger.steaminventorytracker.model.Item;
 import com.hinderegger.steaminventorytracker.model.Price;
 import com.hinderegger.steaminventorytracker.model.PriceTrend;
 import com.hinderegger.steaminventorytracker.repository.ItemRepository;
-import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Optional;
@@ -20,6 +19,7 @@ import org.springframework.web.server.ResponseStatusException;
 public class ItemService {
 
   private final ItemRepository itemRepository;
+  private final TimeProvider timeProvider;
 
   public Item addItem(final Item item) {
     final String itemName = item.getItemName();
@@ -45,7 +45,7 @@ public class ItemService {
   public Item updatePriceForItem(final String name, final double price, final double median) {
     final Optional<Item> itemByName = itemRepository.findById(name);
     if (itemByName.isPresent()) {
-      final Price price1 = new Price(price, median, LocalDateTime.now());
+      final Price price1 = new Price(price, median, timeProvider.now());
       final Item item = itemByName.get();
       item.addPrice(price1);
       return itemRepository.save(item);
