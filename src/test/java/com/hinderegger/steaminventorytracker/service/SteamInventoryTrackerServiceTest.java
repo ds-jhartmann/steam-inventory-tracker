@@ -25,6 +25,7 @@ class SteamInventoryTrackerServiceTest {
   private SteamInventoryTrackerService testee;
   private HttpClient httpClient;
   private SteamMarketAPIClient steamMock;
+  private MockTimeProvider mockTimeProvider;
 
   @BeforeEach
   void setUp() {
@@ -32,10 +33,21 @@ class SteamInventoryTrackerServiceTest {
     final SteamConfiguration steamConfig = new SteamConfiguration();
     steamConfig.setBaseurl("http://local.test");
     steamConfig.setPath("/test?query=");
-    steamConfig.setSleepDuration(1);
+    steamConfig.setSleepDuration(0); // Set to 0 for tests to avoid unnecessary delays
     ItemRepository itemRepository = mock(ItemRepository.class);
     httpClient = mock(HttpClient.class);
-    testee = new SteamInventoryTrackerService(itemRepository, steamMock, steamConfig, httpClient);
+    mockTimeProvider = new MockTimeProvider();
+
+    // Configure the MockTimeProvider
+    LocalDateTime fixedTime = LocalDateTime.of(2023, 12, 20, 15, 0, 0);
+    mockTimeProvider.setFixedTime(fixedTime);
+    mockTimeProvider.setFixedTimeMillis(1000L);
+    mockTimeProvider.setIncrementTimeMillis(
+        true); // This will make currentTimeMillis() return increasing values
+
+    testee =
+        new SteamInventoryTrackerService(
+            itemRepository, steamMock, steamConfig, httpClient, mockTimeProvider);
 
     Price price = new Price(0.1, 0.11, LocalDateTime.of(2023, 12, 20, 15, 0, 0));
     ArrayList<Price> priceHistory = new ArrayList<>(List.of(price));

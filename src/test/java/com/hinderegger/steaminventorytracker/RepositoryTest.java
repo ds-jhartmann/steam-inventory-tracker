@@ -7,11 +7,13 @@ import static org.mockito.Mockito.*;
 import com.hinderegger.steaminventorytracker.configuration.SteamConfiguration;
 import com.hinderegger.steaminventorytracker.model.Item;
 import com.hinderegger.steaminventorytracker.repository.ItemRepository;
+import com.hinderegger.steaminventorytracker.service.MockTimeProvider;
 import com.hinderegger.steaminventorytracker.service.SteamInventoryTrackerService;
 import com.hinderegger.steaminventorytracker.service.SteamMarketAPIClient;
 import java.io.IOException;
 import java.net.http.HttpClient;
 import java.net.http.HttpResponse;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.AfterEach;
@@ -35,6 +37,7 @@ class RepositoryTest {
   private SteamInventoryTrackerService testee;
   private SteamMarketAPIClient steamMock;
   private HttpClient httpClientMock;
+  private MockTimeProvider mockTimeProvider;
 
   @BeforeEach
   void setUp() {
@@ -42,17 +45,27 @@ class RepositoryTest {
     SteamConfiguration steamConfig = new SteamConfiguration();
     steamConfig.setBaseurl("http://local.test");
     steamConfig.setPath("/test?query=");
-    steamConfig.setSleepDuration(1);
+    steamConfig.setSleepDuration(0); // Set to 0 for tests to avoid unnecessary delays
 
     httpClientMock = mock(HttpClient.class);
+    mockTimeProvider = new MockTimeProvider();
+
+    // Configure the mock TimeProvider
+    LocalDateTime fixedTime = LocalDateTime.of(2023, 12, 20, 15, 0, 0);
+    mockTimeProvider.setFixedTime(fixedTime);
+    mockTimeProvider.setFixedTimeMillis(1000L);
+    mockTimeProvider.setIncrementTimeMillis(true); // This will make currentTimeMillis() return increasing values
 
     testee =
-        new SteamInventoryTrackerService(itemRepository, steamMock, steamConfig, httpClientMock);
+        new SteamInventoryTrackerService(itemRepository, steamMock, steamConfig, httpClientMock, mockTimeProvider);
   }
 
   @AfterEach
   void tearDown() {
-    itemRepository.deleteAll();
+    // Delete only the specific items used in tests instead of all items
+    itemRepository.deleteById("Test 1");
+    itemRepository.deleteById("Test 2");
+    // This is more efficient than deleteAll() when we know exactly what we inserted
   }
 
   @Test

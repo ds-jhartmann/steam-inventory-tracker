@@ -1,11 +1,12 @@
 package com.hinderegger.steaminventorytracker.service;
 
+import static reactor.core.Exceptions.isRetryExhausted;
+
 import com.hinderegger.steaminventorytracker.SteamInventoryTrackerApplication;
 import com.hinderegger.steaminventorytracker.model.Item;
 import io.github.resilience4j.ratelimiter.RateLimiter;
 import io.github.resilience4j.reactor.ratelimiter.operator.RateLimiterOperator;
 import java.time.Duration;
-import java.time.LocalDateTime;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -13,8 +14,6 @@ import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.publisher.Mono;
 import reactor.util.retry.Retry;
-
-import static reactor.core.Exceptions.isRetryExhausted;
 
 @Slf4j
 @Service
@@ -25,14 +24,17 @@ public class SteamMarketAPIClient {
   private final RateLimiter rateLimiter;
 
   private final String path;
+  private final TimeProvider timeProvider;
 
   public SteamMarketAPIClient(
       final WebClient client,
       final RateLimiter rateLimiter,
-      final @Value("${steam.path}") String path) {
+      final @Value("${steam.path}") String path,
+      final TimeProvider timeProvider) {
     this.client = client;
     this.rateLimiter = rateLimiter;
     this.path = path;
+    this.timeProvider = timeProvider;
   }
 
   public Mono<String> getPriceForItem(final Item item) {
@@ -51,7 +53,7 @@ public class SteamMarketAPIClient {
                   log.info(
                       "{} - {} - call triggered",
                       SteamInventoryTrackerApplication.COUNTER.incrementAndGet(),
-                      LocalDateTime.now()))
+                      timeProvider.now()))
           .transformDeferred(RateLimiterOperator.of(rateLimiter))
           .retryWhen(Retry.backoff(3, Duration.ofSeconds(1L)).filter(this::isError));
     } catch (IllegalStateException e) {

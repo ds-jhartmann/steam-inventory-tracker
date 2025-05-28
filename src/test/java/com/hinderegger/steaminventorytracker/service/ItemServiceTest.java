@@ -25,10 +25,12 @@ class ItemServiceTest {
 
   @Autowired private ItemRepository itemRepository;
   private ItemService testee;
+  private MockTimeProvider mockTimeProvider;
 
   @BeforeEach
   void setUp() {
-    testee = new ItemService(itemRepository);
+    mockTimeProvider = new MockTimeProvider();
+    testee = new ItemService(itemRepository, mockTimeProvider);
   }
 
   @AfterEach

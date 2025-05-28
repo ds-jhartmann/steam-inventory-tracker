@@ -26,6 +26,7 @@ class SteamMarketAPIClientTest {
 
   private SteamMarketAPIClient testee;
   @Mock private ExchangeFunction exchangeFunction;
+  private MockTimeProvider mockTimeProvider;
 
   @BeforeEach
   void setUp() {
@@ -39,7 +40,9 @@ class SteamMarketAPIClientTest {
                 .limitForPeriod(1)
                 .timeoutDuration(Duration.ofSeconds(6L))
                 .build());
-    testee = new SteamMarketAPIClient(webClient, rateLimiter, "?market_hash_name=");
+    mockTimeProvider = new MockTimeProvider();
+    testee =
+        new SteamMarketAPIClient(webClient, rateLimiter, "?market_hash_name=", mockTimeProvider);
   }
 
   @Test
