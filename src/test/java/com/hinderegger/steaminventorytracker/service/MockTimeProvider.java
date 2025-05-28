@@ -42,7 +42,7 @@ public class MockTimeProvider implements TimeProvider {
   }
 
   @Override
-  public void sleep(int seconds) throws InterruptedException {
+  public void sleep(int seconds) {
     // Do nothing in tests to avoid actual sleeping
   }
 

@@ -37,7 +37,6 @@ class RepositoryTest {
   private SteamInventoryTrackerService testee;
   private SteamMarketAPIClient steamMock;
   private HttpClient httpClientMock;
-  private MockTimeProvider mockTimeProvider;
 
   @BeforeEach
   void setUp() {
@@ -48,16 +47,18 @@ class RepositoryTest {
     steamConfig.setSleepDuration(0); // Set to 0 for tests to avoid unnecessary delays
 
     httpClientMock = mock(HttpClient.class);
-    mockTimeProvider = new MockTimeProvider();
+    final MockTimeProvider mockTimeProvider = new MockTimeProvider();
 
     // Configure the mock TimeProvider
     LocalDateTime fixedTime = LocalDateTime.of(2023, 12, 20, 15, 0, 0);
     mockTimeProvider.setFixedTime(fixedTime);
     mockTimeProvider.setFixedTimeMillis(1000L);
-    mockTimeProvider.setIncrementTimeMillis(true); // This will make currentTimeMillis() return increasing values
+    mockTimeProvider.setIncrementTimeMillis(
+        true); // This will make currentTimeMillis() return increasing values
 
     testee =
-        new SteamInventoryTrackerService(itemRepository, steamMock, steamConfig, httpClientMock, mockTimeProvider);
+        new SteamInventoryTrackerService(
+            itemRepository, steamMock, steamConfig, httpClientMock, mockTimeProvider);
   }
 
   @AfterEach
