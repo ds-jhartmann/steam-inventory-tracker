@@ -44,7 +44,7 @@ jobs:
         run: mvn -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.projectKey=ds-jhartmann_steam-inventory-tracker
 
       - name: Publish Test Results
-        uses: EnricoMi/publish-unit-test-result-action@v2.17.0
+        uses: EnricoMi/publish-unit-test-result-action@v2.20.0
         if: always()
         with:
           files: |
