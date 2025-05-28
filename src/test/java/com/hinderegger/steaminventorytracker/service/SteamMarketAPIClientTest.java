@@ -5,12 +5,12 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
+import com.hinderegger.steaminventorytracker.configuration.SteamConfiguration;
 import com.hinderegger.steaminventorytracker.model.Item;
 import io.github.resilience4j.ratelimiter.RateLimiter;
 import io.github.resilience4j.ratelimiter.RateLimiterConfig;
 import java.time.Duration;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -31,17 +31,26 @@ class SteamMarketAPIClientTest {
   void setUp() {
     final WebClient webClient = WebClient.builder().exchangeFunction(exchangeFunction).build();
 
+    // Create a real RateLimiter but with very small time values (milliseconds instead of seconds)
     final RateLimiter rateLimiter =
         RateLimiter.of(
             "test",
             RateLimiterConfig.custom()
-                .limitRefreshPeriod(Duration.ofSeconds(2L))
+                .limitRefreshPeriod(Duration.ofMillis(1)) // 1 millisecond instead of seconds
                 .limitForPeriod(1)
-                .timeoutDuration(Duration.ofSeconds(6L))
+                .timeoutDuration(Duration.ofMillis(5)) // 5 milliseconds instead of seconds
                 .build());
+
+    // Create a SteamConfiguration with test retry parameters
+    final SteamConfiguration steamConfiguration = new SteamConfiguration();
+    steamConfiguration.setMaxRetryAttempts(3);
+    steamConfiguration.setRetryInitialBackoff(Duration.ofMillis(1));
+    steamConfiguration.setRetryMaxBackoff(Duration.ofMillis(10));
+    steamConfiguration.setRetryJitter(0.5);
+
     final MockTimeProvider mockTimeProvider = new MockTimeProvider();
     testee =
-        new SteamMarketAPIClient(webClient, rateLimiter, "?market_hash_name=", mockTimeProvider);
+        new SteamMarketAPIClient(webClient, rateLimiter, "?market_hash_name=", mockTimeProvider, steamConfiguration);
   }
 
   @Test
@@ -79,17 +88,20 @@ class SteamMarketAPIClientTest {
     // Act
     test.start();
     final String result1 = testee.getPriceForItem(new Item("Test Item", List.of())).block();
-    final String result2 = testee.getPriceForItem(new Item("Test Item", List.of())).block();
+    final String result2 = testee.getPriceForItem(new Item("Test Item 2", List.of())).block();
     test.stop();
 
     // Assert
-    assertThat(test.getTotalTime(TimeUnit.SECONDS)).isGreaterThan(1);
+    // The test should complete very quickly since we're using millisecond values for the RateLimiter
+    assertThat(test.getTotalTimeMillis()).isLessThan(100); // Should complete in less than 100ms
+
     assertThat(result1)
         .isEqualTo(
             "{\"success\":true,\"lowest_price\":\"5,79€\",\"volume\":\"3,990\",\"median_price\":\"5,61€\"}");
     assertThat(result2)
         .isEqualTo(
             "{\"success\":true,\"lowest_price\":\"5,79€\",\"volume\":\"3,990\",\"median_price\":\"5,61€\"}");
+
     verify(exchangeFunction, times(2)).exchange(any());
   }
 

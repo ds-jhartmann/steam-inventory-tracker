@@ -3,10 +3,10 @@ package com.hinderegger.steaminventorytracker.service;
 import static reactor.core.Exceptions.isRetryExhausted;
 
 import com.hinderegger.steaminventorytracker.SteamInventoryTrackerApplication;
+import com.hinderegger.steaminventorytracker.configuration.SteamConfiguration;
 import com.hinderegger.steaminventorytracker.model.Item;
 import io.github.resilience4j.ratelimiter.RateLimiter;
 import io.github.resilience4j.reactor.ratelimiter.operator.RateLimiterOperator;
-import java.time.Duration;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -20,21 +20,22 @@ import reactor.util.retry.Retry;
 public class SteamMarketAPIClient {
 
   private final WebClient client;
-
   private final RateLimiter rateLimiter;
-
   private final String path;
   private final TimeProvider timeProvider;
+  private final SteamConfiguration steamConfiguration;
 
   public SteamMarketAPIClient(
       final WebClient client,
       final RateLimiter rateLimiter,
       final @Value("${steam.path}") String path,
-      final TimeProvider timeProvider) {
+      final TimeProvider timeProvider,
+      final SteamConfiguration steamConfiguration) {
     this.client = client;
     this.rateLimiter = rateLimiter;
     this.path = path;
     this.timeProvider = timeProvider;
+    this.steamConfiguration = steamConfiguration;
   }
 
   public Mono<String> getPriceForItem(final Item item) {
@@ -55,7 +56,7 @@ public class SteamMarketAPIClient {
                       SteamInventoryTrackerApplication.COUNTER.incrementAndGet(),
                       timeProvider.now()))
           .transformDeferred(RateLimiterOperator.of(rateLimiter))
-          .retryWhen(Retry.backoff(3, Duration.ofSeconds(1L)).filter(this::isError));
+          .retryWhen(createRetrySpec());
     } catch (IllegalStateException e) {
       if (isRetryExhausted(e)) {
         return Mono.error(e);
@@ -67,5 +68,18 @@ public class SteamMarketAPIClient {
 
   private boolean isError(Throwable throwable) {
     return ((WebClientResponseException) throwable).getStatusCode().isError();
+  }
+
+  /**
+   * Creates a retry specification using the configured retry parameters.
+   *
+   * @return the retry specification
+   */
+  private Retry createRetrySpec() {
+    return Retry.backoff(
+            steamConfiguration.getMaxRetryAttempts(), steamConfiguration.getRetryInitialBackoff())
+        .maxBackoff(steamConfiguration.getRetryMaxBackoff())
+        .jitter(steamConfiguration.getRetryJitter())
+        .filter(this::isError);
   }
 }

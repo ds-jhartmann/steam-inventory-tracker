@@ -15,4 +15,10 @@ public class SteamConfiguration {
   private Duration limitRefreshPeriod;
   private int limitForPeriod;
   private int sleepDuration;
+
+  // Retry configuration
+  private int maxRetryAttempts;
+  private Duration retryInitialBackoff;
+  private Duration retryMaxBackoff;
+  private double retryJitter;
 }

@@ -5,6 +5,11 @@ steam:
   limitRefreshPeriod: PT30S # wait time between periods
   limitForPeriod: 1 # apply the wait duration for every request
   sleep-duration: 15 # sleep duration between requests in seconds. Only relevant for the HttpClient
+  # Retry configuration
+  max-retry-attempts: 3 # maximum number of retry attempts
+  retry-initial-backoff: PT1S # initial backoff duration
+  retry-max-backoff: PT10S # maximum backoff duration
+  retry-jitter: 0.5 # jitter factor for randomizing backoff
 scheduler:
   #        ┌───────────── second (0-59)
   #        │ ┌───────────── minute (0 - 59)
