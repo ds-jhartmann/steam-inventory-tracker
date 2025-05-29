@@ -1,13 +1,11 @@
 package com.hinderegger.steaminventorytracker.service.strategy;
 
 import com.hinderegger.steaminventorytracker.model.Item;
-import com.hinderegger.steaminventorytracker.model.Price;
 import com.hinderegger.steaminventorytracker.repository.ItemRepository;
 import com.hinderegger.steaminventorytracker.service.SteamMarketAPIClient;
 import com.hinderegger.steaminventorytracker.service.TimeProvider;
 import java.util.Collections;
 import java.util.List;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.json.JSONObject;
 import org.springframework.stereotype.Component;
@@ -19,12 +17,17 @@ import reactor.core.publisher.Mono;
  */
 @Component
 @Slf4j
-@RequiredArgsConstructor
-public class AsyncSteamRequestStrategy implements SteamRequestStrategy {
+public class AsyncSteamRequestStrategy extends AbstractSteamRequestStrategy {
 
   private final SteamMarketAPIClient steamMarketAPIClient;
-  private final ItemRepository itemRepository;
-  private final TimeProvider timeProvider;
+
+  public AsyncSteamRequestStrategy(
+      SteamMarketAPIClient steamMarketAPIClient,
+      ItemRepository itemRepository,
+      TimeProvider timeProvider) {
+    super(itemRepository, timeProvider);
+    this.steamMarketAPIClient = steamMarketAPIClient;
+  }
 
   @Override
   public void requestItems(List<Item> items) {
@@ -69,52 +72,5 @@ public class AsyncSteamRequestStrategy implements SteamRequestStrategy {
    */
   private Mono<String> callSteamAPI(Item item) {
     return steamMarketAPIClient.getPriceForItem(item);
-  }
-
-  /**
-   * Parses the JSON response and stores the price data in the item.
-   *
-   * @param item The item to update
-   * @param jsonObject The JSON response from Steam
-   */
-  private void parseAndStoreItem(Item item, JSONObject jsonObject) {
-    try {
-      double medianPrice = 0;
-      double lowestPrice = 0;
-      if (jsonObject.has("median_price")) {
-        medianPrice = Double.parseDouble(formatString(jsonObject, "median_price"));
-      }
-      if (jsonObject.has("lowest_price")) {
-        lowestPrice = Double.parseDouble(formatString(jsonObject, "lowest_price"));
-      }
-
-      if (lowestPrice > 0.0) {
-        final Price price = new Price(lowestPrice, medianPrice, timeProvider.now());
-        log.info("Adding price {} to item {}", price, item.getItemName());
-        item.addPrice(price);
-        itemRepository.save(item);
-      } else {
-        log.error("No lowest_price found. Skipping Item: {}", item.getItemName());
-      }
-    } catch (NumberFormatException e) {
-      log.error(
-          "Error while parsing response JSON for item {}: {}", item.getItemName(), e.getMessage());
-    }
-  }
-
-  /**
-   * Formats a string value from the JSON response for parsing as a number.
-   *
-   * @param jsonObject The JSON object
-   * @param key The key to extract
-   * @return The formatted string
-   */
-  private String formatString(JSONObject jsonObject, String key) {
-    return jsonObject
-        .getString(key)
-        .replace("€", "")
-        .replace(",", ".")
-        .replace(" ", "")
-        .replace("-", "0");
   }
 }
