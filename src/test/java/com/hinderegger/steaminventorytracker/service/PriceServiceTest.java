@@ -136,7 +136,29 @@ class PriceServiceTest {
   }
 
   @Test
-  void shouldThrowExceptionWhenNoDataForTimespan() {
+  void shouldThrowExceptionWhenCalculatingTrendWithEmptyPriceHistory() {
+    // Arrange
+    Item emptyItem = new Item("Empty Item", new ArrayList<>());
+
+    // Act & Assert
+    assertThatThrownBy(() -> priceService.calculatePriceTrendByDay(emptyItem))
+        .isInstanceOf(PriceHistoryException.class)
+        .hasMessageContaining("Price history is empty");
+  }
+
+  @Test
+  void shouldThrowExceptionWhenCalculatingTrendWithTimespanAndEmptyPriceHistory() {
+    // Arrange
+    Item emptyItem = new Item("Empty Item", new ArrayList<>());
+
+    // Act & Assert
+    assertThatThrownBy(() -> priceService.calculatePriceTrendByDay(emptyItem, 7, ChronoUnit.DAYS))
+        .isInstanceOf(PriceHistoryException.class)
+        .hasMessageContaining("Price History is empty");
+  }
+
+  @Test
+  void shouldThrowExceptionWhenTimespanExceedsAvailablePriceHistory() {
     // Arrange
     // Create an item with price history that doesn't go back far enough
     List<Price> limitedPriceHistory = new ArrayList<>();
