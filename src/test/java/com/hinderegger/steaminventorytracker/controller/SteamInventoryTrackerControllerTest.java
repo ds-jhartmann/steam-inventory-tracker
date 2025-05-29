@@ -16,8 +16,10 @@ import com.hinderegger.steaminventorytracker.model.Item;
 import com.hinderegger.steaminventorytracker.model.Price;
 import com.hinderegger.steaminventorytracker.model.PriceTrend;
 import com.hinderegger.steaminventorytracker.service.BuyInfoService;
+import com.hinderegger.steaminventorytracker.service.CSVExporter;
 import com.hinderegger.steaminventorytracker.service.ItemService;
 import com.hinderegger.steaminventorytracker.service.PriceHistoryException;
+import com.hinderegger.steaminventorytracker.service.PriceService;
 import com.hinderegger.steaminventorytracker.service.SteamInventoryTrackerService;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
@@ -33,6 +35,8 @@ class SteamInventoryTrackerControllerTest {
   private SteamInventoryTrackerService steamInventoryTrackerService;
   private ItemService itemService;
   private BuyInfoService buyInfoService;
+  private PriceService priceService;
+  private CSVExporter csvExporter;
   private SteamInventoryTrackerController controller;
 
   private Item testItem;
@@ -41,22 +45,30 @@ class SteamInventoryTrackerControllerTest {
   private PriceTrend testPriceTrend;
 
   @BeforeEach
-  void setUp() {
+  void setUp() throws PriceHistoryException {
     // Set up mocks
     steamInventoryTrackerService = mock(SteamInventoryTrackerService.class);
     itemService = mock(ItemService.class);
     buyInfoService = mock(BuyInfoService.class);
-    
+    priceService = mock(PriceService.class);
+    csvExporter = mock(CSVExporter.class);
+
     // Create controller with mocks
     controller = new SteamInventoryTrackerController(
-        steamInventoryTrackerService, itemService, buyInfoService);
-    
+        steamInventoryTrackerService, itemService, buyInfoService, priceService, csvExporter);
+
     // Set up test data
     testPriceHistory = new ArrayList<>();
     testPriceHistory.add(new Price(10.0, 11.0, LocalDateTime.now()));
     testItem = new Item("Test Item", testPriceHistory);
     testBuyInfo = new BuyInfo("Test Item", 5, 9.99);
     testPriceTrend = new PriceTrend(1.0, 0.1, 1.5, 0.15);
+
+    // Set up mock behavior for priceService
+    when(priceService.getLatestPrice(any(Item.class))).thenReturn(testPriceHistory.get(0));
+
+    // Set up mock behavior for csvExporter
+    when(csvExporter.createCSV(any())).thenReturn("name,price,median");
   }
 
   @Test
@@ -197,9 +209,13 @@ class SteamInventoryTrackerControllerTest {
     // Arrange
     List<BuyInfo> buyInfos = List.of(testBuyInfo);
     when(buyInfoService.getAllBuyInfos()).thenReturn(buyInfos);
-    
+
     Item itemWithoutPrice = new Item("Test Item", new ArrayList<>());
     when(itemService.getItemByName(anyString())).thenReturn(itemWithoutPrice);
+
+    // Override the default mock behavior for this specific test
+    when(priceService.getLatestPrice(itemWithoutPrice))
+        .thenThrow(new PriceHistoryException("No price history for Item: Test Item"));
 
     // Act
     ResponseEntity<Double> response = controller.getTotalInventoryValue();

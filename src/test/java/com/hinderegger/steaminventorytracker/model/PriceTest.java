@@ -3,13 +3,27 @@ package com.hinderegger.steaminventorytracker.model;
 import static org.assertj.core.api.Assertions.*;
 
 import com.hinderegger.steaminventorytracker.service.PriceHistoryException;
+import com.hinderegger.steaminventorytracker.service.PriceService;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+/**
+ * Tests for the Price model and PriceService functionality.
+ * These tests verify the behavior of price-related operations that have been moved
+ * from the Item class to the PriceService class.
+ */
 class PriceTest {
+
+  private PriceService priceService;
+
+  @BeforeEach
+  void setUp() {
+    priceService = new PriceService();
+  }
 
   @Test
   void shouldReturnOnlyPrice() throws PriceHistoryException {
@@ -19,7 +33,7 @@ class PriceTest {
     Item item = new Item("Item 1", priceHistory);
 
     // Act
-    Price latestPriceFromItem = item.getLatestPrice();
+    Price latestPriceFromItem = priceService.getLatestPrice(item);
 
     // Assert
     assertThat(latestPriceFromItem).isEqualTo(price);
@@ -34,7 +48,7 @@ class PriceTest {
     Item item = new Item("Item 1", priceHistory);
 
     // Act
-    Price latestPriceFromItem = item.getLatestPrice();
+    Price latestPriceFromItem = priceService.getLatestPrice(item);
 
     // Assert
     assertThat(latestPriceFromItem).isEqualTo(price2);
@@ -47,7 +61,9 @@ class PriceTest {
     Item item = new Item("Item 1", priceHistory);
 
     // Act & Assert
-    assertThatException().isThrownBy(item::getLatestPrice).isInstanceOf(PriceHistoryException.class);
+    assertThatException()
+        .isThrownBy(() -> priceService.getLatestPrice(item))
+        .isInstanceOf(PriceHistoryException.class);
   }
 
   @Test
@@ -80,7 +96,7 @@ class PriceTest {
     Item item = new Item("Item 1", priceHistory);
 
     // Act
-    List<Price> pricesByDay = item.calculateAverageAndMedianPricesPerDay();
+    List<Price> pricesByDay = priceService.calculateAverageAndMedianPricesPerDay(item);
 
     // Assert
     assertThat(pricesByDay).hasSize(11);
@@ -122,7 +138,7 @@ class PriceTest {
     Item item = new Item("Item 1", priceHistory);
 
     // Act
-    List<Price> pricesByDay = item.calculateAverageAndMedianPricesPerDay();
+    List<Price> pricesByDay = priceService.calculateAverageAndMedianPricesPerDay(item);
 
     // Assert
     assertThat(pricesByDay).hasSize(6);
@@ -151,7 +167,7 @@ class PriceTest {
     Item item = new Item("Item 1", priceHistory);
 
     // Act
-    PriceTrend priceTrend = item.calculatePriceTrendByDay();
+    PriceTrend priceTrend = priceService.calculatePriceTrendByDay(item);
 
     // Assert
     PriceTrend expectedPriceTrend = new PriceTrend(0.18, 0.0756, -0.16, -0.0576);
@@ -172,7 +188,7 @@ class PriceTest {
     Item item = new Item("Item 1", priceHistory);
 
     // Act
-    PriceTrend priceTrend = item.calculatePriceTrendByDay();
+    PriceTrend priceTrend = priceService.calculatePriceTrendByDay(item);
 
     // Assert
     PriceTrend expectedPriceTrend = new PriceTrend(0.18, 0.0756, -0.16, -0.0576);
@@ -190,7 +206,7 @@ class PriceTest {
     Item item = new Item("Item 1", priceHistory);
 
     // Act
-    PriceTrend priceTrend = item.calculatePriceTrendByDay();
+    PriceTrend priceTrend = priceService.calculatePriceTrendByDay(item);
 
     // Assert
     PriceTrend expectedPriceTrend = new PriceTrend(0.00, 0.0000, 0.00, 0.0000);
@@ -204,7 +220,9 @@ class PriceTest {
     Item item = new Item("Item 1", priceHistory);
 
     // Act & Assert
-    assertThatException().isThrownBy(item::calculatePriceTrendByDay).isInstanceOf(PriceHistoryException.class);
+    assertThatException()
+        .isThrownBy(() -> priceService.calculatePriceTrendByDay(item))
+        .isInstanceOf(PriceHistoryException.class);
   }
 
   @Test
@@ -221,7 +239,7 @@ class PriceTest {
     Item item = new Item("Item 1", priceHistory);
 
     // Act
-    PriceTrend priceTrend7Days = item.calculatePriceTrendByDay(7, ChronoUnit.DAYS);
+    PriceTrend priceTrend7Days = priceService.calculatePriceTrendByDay(item, 7, ChronoUnit.DAYS);
 
     // Assert
     PriceTrend expectedPriceTrend = new PriceTrend(0.18, 0.0756, -0.16, -0.0576);
@@ -242,7 +260,7 @@ class PriceTest {
     Item item = new Item("Item 1", priceHistory);
 
     // Act
-    PriceTrend priceTrend7Days = item.calculatePriceTrendByDay(7, ChronoUnit.DAYS);
+    PriceTrend priceTrend7Days = priceService.calculatePriceTrendByDay(item, 7, ChronoUnit.DAYS);
 
     // Assert
     PriceTrend expectedPriceTrend = new PriceTrend(0.18, 0.0756, -0.16, -0.0576);
@@ -265,7 +283,7 @@ class PriceTest {
     Item item = new Item("Item 1", priceHistory);
 
     // Act
-    PriceTrend priceTrend7Days = item.calculatePriceTrendByDay(7, ChronoUnit.DAYS);
+    PriceTrend priceTrend7Days = priceService.calculatePriceTrendByDay(item, 7, ChronoUnit.DAYS);
 
     // Assert
     PriceTrend expectedPriceTrend = new PriceTrend(0.18, 0.0756, -0.16, -0.0576);
@@ -286,7 +304,9 @@ class PriceTest {
     Item item = new Item("Item 1", priceHistory);
 
     // Act && Assert
-    assertThatException().isThrownBy(() -> item.calculatePriceTrendByDay(7, ChronoUnit.DAYS))
-        .isInstanceOf(PriceHistoryException.class).withMessage("There is no Price within 7 Days prior to the latest Price.");
+    assertThatException()
+        .isThrownBy(() -> priceService.calculatePriceTrendByDay(item, 7, ChronoUnit.DAYS))
+        .isInstanceOf(PriceHistoryException.class)
+        .withMessage("There is no Price within 7 DAYS prior to the latest Price.");
   }
 }

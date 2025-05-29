@@ -14,11 +14,8 @@ class PriceTrendTest {
     // Assert
     assertThat(trend.absolutePriceChange()).isEqualTo(10.5);
     assertThat(trend.percentagePriceChange()).isEqualTo(0.25);
-    // Note: There appears to be a naming mismatch in how these fields are used in the codebase
-    // percentageMedianChange is actually used for absoluteMedianChange
-    // absoluteMedianChange is actually used for percentageMedianChange
-    assertThat(trend.percentageMedianChange()).isEqualTo(11.5);
-    assertThat(trend.absoluteMedianChange()).isEqualTo(0.3);
+    assertThat(trend.absoluteMedianChange()).isEqualTo(11.5);
+    assertThat(trend.percentageMedianChange()).isEqualTo(0.3);
   }
   
   @Test
@@ -38,7 +35,7 @@ class PriceTrendTest {
   @Test
   void shouldImplementToString() {
     // Arrange
-    PriceTrend trend = new PriceTrend(10.5, 0.25, 11.5, 0.3);
+    PriceTrend trend = new PriceTrend(10.5, 0.25, 0.3, 11.5);
     
     // Act
     String toString = trend.toString();
@@ -46,20 +43,20 @@ class PriceTrendTest {
     // Assert
     assertThat(toString).contains("absolutePriceChange=10.5");
     assertThat(toString).contains("percentagePriceChange=0.25");
-    assertThat(toString).contains("percentageMedianChange=11.5");
     assertThat(toString).contains("absoluteMedianChange=0.3");
+    assertThat(toString).contains("percentageMedianChange=11.5");
   }
   
   @Test
   void shouldHandleNegativeValues() {
     // Arrange
-    PriceTrend trend = new PriceTrend(-10.5, -0.25, -11.5, -0.3);
+    PriceTrend trend = new PriceTrend(-10.5, -0.25, -0.3, -11.5);
     
     // Assert
     assertThat(trend.absolutePriceChange()).isEqualTo(-10.5);
     assertThat(trend.percentagePriceChange()).isEqualTo(-0.25);
-    assertThat(trend.percentageMedianChange()).isEqualTo(-11.5);
     assertThat(trend.absoluteMedianChange()).isEqualTo(-0.3);
+    assertThat(trend.percentageMedianChange()).isEqualTo(-11.5);
   }
   
   @Test
@@ -70,7 +67,7 @@ class PriceTrendTest {
     // Assert
     assertThat(trend.absolutePriceChange()).isEqualTo(0.0);
     assertThat(trend.percentagePriceChange()).isEqualTo(0.0);
-    assertThat(trend.percentageMedianChange()).isEqualTo(0.0);
     assertThat(trend.absoluteMedianChange()).isEqualTo(0.0);
+    assertThat(trend.percentageMedianChange()).isEqualTo(0.0);
   }
 }

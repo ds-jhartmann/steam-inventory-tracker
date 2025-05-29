@@ -16,7 +16,8 @@ public class PriceCalculator {
     return BigDecimal.valueOf(value).setScale(4, RoundingMode.HALF_UP).doubleValue();
   }
 
-  private static double getPercentageChange(final double absoluteChange, final double previousPrice) {
+  private static double getPercentageChange(
+      final double absoluteChange, final double previousPrice) {
     return absoluteChange / previousPrice;
   }
 
@@ -24,15 +25,19 @@ public class PriceCalculator {
     return latestPrice - previousPrice;
   }
 
+  /**
+   * Calculates the price trend between two price points.
+   *
+   * @param latestPrice The most recent price
+   * @param previousPrice The previous price to compare against
+   * @return A PriceTrend object containing absolute and percentage changes
+   */
   public static PriceTrend getPriceTrend(final Price latestPrice, final Price previousPrice) {
-    double absolutePriceChange =
-        getAbsoluteChange(latestPrice.getPrice(), previousPrice.getPrice());
-    double percentagePriceChange =
-        getPercentageChange(absolutePriceChange, previousPrice.getPrice());
-    double absoluteMedianChange =
-        getAbsoluteChange(latestPrice.getMedian(), previousPrice.getMedian());
+    double absolutePriceChange = getAbsoluteChange(latestPrice.price(), previousPrice.price());
+    double percentagePriceChange = getPercentageChange(absolutePriceChange, previousPrice.price());
+    double absoluteMedianChange = getAbsoluteChange(latestPrice.median(), previousPrice.median());
     double percentageMedianChange =
-        getPercentageChange(absoluteMedianChange, previousPrice.getMedian());
+        getPercentageChange(absoluteMedianChange, previousPrice.median());
     return new PriceTrend(
         roundHalfUpTo2Decimals(absolutePriceChange),
         roundHalfUpTo4Decimals(percentagePriceChange),

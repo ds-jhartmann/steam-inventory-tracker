@@ -42,16 +42,10 @@ class PriceCalculatorTest {
     PriceTrend result = PriceCalculator.getPriceTrend(latestPrice, previousPrice);
 
     // Assert
-    // Note: The order of parameters in PriceTrend is:
-    // 1. absolutePriceChange
-    // 2. percentagePriceChange
-    // 3. percentageMedianChange (this is actually absoluteMedianChange in the implementation)
-    // 4. absoluteMedianChange (this is actually percentageMedianChange in the implementation)
     assertThat(result.absolutePriceChange()).isEqualTo(0.50);
     assertThat(result.percentagePriceChange()).isEqualTo(0.05);
-    // These two are swapped in the implementation compared to the record definition
-    assertThat(result.percentageMedianChange()).isEqualTo(0.50); // This is actually absoluteMedianChange
-    assertThat(result.absoluteMedianChange()).isEqualTo(0.0455); // This is actually percentageMedianChange
+    assertThat(result.absoluteMedianChange()).isEqualTo(0.50);
+    assertThat(result.percentageMedianChange()).isEqualTo(0.0455);
   }
 
   @Test
@@ -67,9 +61,8 @@ class PriceCalculatorTest {
     // Assert
     assertThat(result.absolutePriceChange()).isEqualTo(-0.50);
     assertThat(result.percentagePriceChange()).isEqualTo(-0.05);
-    // These two are swapped in the implementation compared to the record definition
-    assertThat(result.percentageMedianChange()).isEqualTo(-0.50); // This is actually absoluteMedianChange
-    assertThat(result.absoluteMedianChange()).isEqualTo(-0.0455); // This is actually percentageMedianChange
+    assertThat(result.absoluteMedianChange()).isEqualTo(-0.50);
+    assertThat(result.percentageMedianChange()).isEqualTo(-0.0455);
   }
 
   @Test
@@ -84,16 +77,15 @@ class PriceCalculatorTest {
     // This test verifies that no exceptions are thrown when dealing with very small values
     assertDoesNotThrow(() -> {
       PriceTrend result = PriceCalculator.getPriceTrend(latestPrice, previousPrice);
-      
+
       // Both absolute changes should be 0.0
       assertThat(result.absolutePriceChange()).isEqualTo(0.0);
-      // These two are swapped in the implementation compared to the record definition
-      assertThat(result.percentageMedianChange()).isEqualTo(0.0); // This is actually absoluteMedianChange
       assertThat(result.percentagePriceChange()).isEqualTo(0.0);
-      assertThat(result.absoluteMedianChange()).isEqualTo(0.0); // This is actually percentageMedianChange
+      assertThat(result.absoluteMedianChange()).isEqualTo(0.0);
+      assertThat(result.percentageMedianChange()).isEqualTo(0.0);
     });
   }
-  
+
   @Test
   void shouldHandleExtremeValues() {
     // Arrange
