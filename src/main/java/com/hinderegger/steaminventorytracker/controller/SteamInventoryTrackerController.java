@@ -10,6 +10,7 @@ import com.hinderegger.steaminventorytracker.service.BuyInfoService;
 import com.hinderegger.steaminventorytracker.service.CSVExporter;
 import com.hinderegger.steaminventorytracker.service.ItemService;
 import com.hinderegger.steaminventorytracker.service.PriceHistoryException;
+import com.hinderegger.steaminventorytracker.service.PriceService;
 import com.hinderegger.steaminventorytracker.service.SteamInventoryTrackerService;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
@@ -31,6 +32,8 @@ public class SteamInventoryTrackerController {
   private final SteamInventoryTrackerService steamInventoryTrackerService;
   private final ItemService itemService;
   private final BuyInfoService buyInfoService;
+  private final PriceService priceService;
+  private final CSVExporter csvExporter;
 
   @PostMapping(path = "/addItem")
   public ResponseEntity<Item> addNewItem(@RequestParam final String name) {
@@ -102,28 +105,39 @@ public class SteamInventoryTrackerController {
     CompletableFuture.runAsync(steamInventoryTrackerService::requestItemsSync);
   }
 
+  /**
+   * Calculates the total value of the inventory based on current prices.
+   *
+   * @return The total value
+   */
   @GetMapping(path = "/getTotalValue")
   public ResponseEntity<Double> getTotalInventoryValue() {
-
+    log.info("Calculating total inventory value");
     final List<BuyInfo> allBuyInfos = buyInfoService.getAllBuyInfos();
     double total = 0.0;
     for (final BuyInfo buyInfo : allBuyInfos) {
       final String itemName = buyInfo.getItemName();
       final Item itemByName = itemService.getItemByName(itemName);
       try {
-        total += itemByName.getLatestPrice().getPrice() * buyInfo.getAmount();
+        Price latestPrice = priceService.getLatestPrice(itemByName);
+        total += latestPrice.price() * buyInfo.getAmount();
       } catch (final PriceHistoryException e) {
-        log.error(e.getMessage());
+        log.error("Error getting latest price for item {}: {}", itemName, e.getMessage());
       }
     }
     return ResponseEntity.ok(total);
   }
 
+  /**
+   * Exports all items with their latest prices as a CSV file.
+   *
+   * @return CSV-formatted string
+   */
   @GetMapping(path = "/exportAsCSV", produces = "text/csv")
   public ResponseEntity<String> getAllCurrentItemsAsCSV() {
     log.info("Exporting latest prices as CSV.");
     final List<Item> items = itemService.getAllItems();
-    final String csv = CSVExporter.createCSV(items);
+    final String csv = csvExporter.createCSV(items);
     return ResponseEntity.ok(csv);
   }
 

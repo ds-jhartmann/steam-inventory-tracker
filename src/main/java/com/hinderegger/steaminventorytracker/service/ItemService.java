@@ -13,6 +13,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+/** Service for managing Item entities. */
 @Service
 @AllArgsConstructor
 @Slf4j
@@ -20,6 +21,7 @@ public class ItemService {
 
   private final ItemRepository itemRepository;
   private final TimeProvider timeProvider;
+  private final PriceService priceService;
 
   public Item addItem(final Item item) {
     final String itemName = item.getItemName();
@@ -65,17 +67,34 @@ public class ItemService {
     return itemRepository.findAll();
   }
 
+  /**
+   * Gets the price trend for an item over a specific timespan.
+   *
+   * @param name The name of the item
+   * @param timespan The timespan to calculate the trend over
+   * @param chronoUnit The unit of time for the timespan
+   * @return The price trend
+   * @throws ResponseStatusException if the item doesn't exist or there's an issue calculating the
+   *     trend
+   */
   public PriceTrend getPriceTrendForItem(
       final String name, final int timespan, final ChronoUnit chronoUnit) {
     final Item item = getItemByName(name);
     try {
-      return item.calculatePriceTrendByDay(timespan, chronoUnit);
+      return priceService.calculatePriceTrendByDay(item, timespan, chronoUnit);
     } catch (PriceHistoryException e) {
       throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage());
     }
   }
 
+  /**
+   * Gets the price history for an item, with prices averaged by day.
+   *
+   * @param name The name of the item
+   * @return A list of daily prices
+   * @throws ResponseStatusException if the item doesn't exist
+   */
   public List<Price> getPriceHistoryForItem(final String name) {
-    return getItemByName(name).calculateAverageAndMedianPricesPerDay();
+    return priceService.calculateAverageAndMedianPricesPerDay(getItemByName(name));
   }
 }

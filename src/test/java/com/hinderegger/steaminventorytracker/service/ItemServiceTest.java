@@ -2,6 +2,7 @@ package com.hinderegger.steaminventorytracker.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatException;
+import static org.mockito.Mockito.mock;
 
 import com.hinderegger.steaminventorytracker.MongoDBTestContainerConfig;
 import com.hinderegger.steaminventorytracker.model.Item;
@@ -28,7 +29,8 @@ class ItemServiceTest {
   @BeforeEach
   void setUp() {
     mockTimeProvider = new MockTimeProvider();
-    testee = new ItemService(itemRepository, mockTimeProvider);
+    PriceService priceService = mock(PriceService.class);
+    testee = new ItemService(itemRepository, mockTimeProvider, priceService);
   }
 
   @AfterEach

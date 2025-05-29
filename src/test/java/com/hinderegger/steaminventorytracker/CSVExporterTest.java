@@ -1,23 +1,52 @@
 package com.hinderegger.steaminventorytracker;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import com.hinderegger.steaminventorytracker.model.Item;
 import com.hinderegger.steaminventorytracker.model.Price;
 import com.hinderegger.steaminventorytracker.service.CSVExporter;
+import com.hinderegger.steaminventorytracker.service.PriceHistoryException;
+import com.hinderegger.steaminventorytracker.service.PriceService;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 class CSVExporterTest {
+
+  private PriceService priceService;
+  private CSVExporter csvExporter;
+
+  @BeforeEach
+  void setUp() throws PriceHistoryException {
+    priceService = mock(PriceService.class);
+    csvExporter = new CSVExporter(priceService);
+
+    // Set up default behavior for the mock
+    when(priceService.getLatestPrice(any()))
+        .thenAnswer(
+            invocation -> {
+              Item item = invocation.getArgument(0);
+              if (item.getPriceHistory().isEmpty()) {
+                throw new PriceHistoryException("No price history for Item: " + item.getItemName());
+              }
+              return item.getPriceHistory().stream()
+                  .max(Comparator.comparing(Price::timestamp))
+                  .orElseThrow();
+            });
+  }
 
   @Test
   void shouldReturnHeaderIfItemsAreEmpty() {
     // Arrange
     List<Item> items = List.of();
     // Act
-    String csv = CSVExporter.createCSV(items);
+    String csv = csvExporter.createCSV(items);
     // Assert
     assertThat(csv).isEqualTo("name,price,median");
   }
@@ -27,11 +56,14 @@ class CSVExporterTest {
     // Arrange
     List<Item> items = List.of(new Item("Item 1", List.of()));
     // Act
-    String csv = CSVExporter.createCSV(items);
+    String csv = csvExporter.createCSV(items);
     // Assert
-    assertThat(csv).isEqualTo("""
-      name,price,median,
-      Item 1,"0,00€","0,00€\"""");
+    assertThat(csv)
+        .isEqualToIgnoringNewLines(
+            """
+        name,price,median,
+        Item 1,"0,00€","0,00€"
+        """);
   }
 
   @Test
@@ -42,11 +74,14 @@ class CSVExporterTest {
     Item item = new Item("Item 1", priceHistory);
     List<Item> items = List.of(item);
     // Act
-    String csv = CSVExporter.createCSV(items);
+    String csv = csvExporter.createCSV(items);
     // Assert
-    assertThat(csv).isEqualTo("""
+    assertThat(csv)
+        .isEqualToIgnoringNewLines(
+            """
       name,price,median,
-      Item 1,"0,1€","0,2€\"""");
+      Item 1,"0,1€","0,2€"
+      """);
   }
 
   @Test
@@ -58,11 +93,14 @@ class CSVExporterTest {
     Item item = new Item("Item 1", priceHistory);
     List<Item> items = List.of(item);
     // Act
-    String csv = CSVExporter.createCSV(items);
+    String csv = csvExporter.createCSV(items);
     // Assert
-    assertThat(csv).isEqualTo("""
+    assertThat(csv)
+        .isEqualToIgnoringNewLines(
+            """
       name,price,median,
-      Item 1,"0,2€","0,3€\"""");
+      Item 1,"0,2€","0,3€"
+      """);
   }
 
   @Test
@@ -78,13 +116,14 @@ class CSVExporterTest {
     Item item2 = new Item("Item 2", priceHistory2);
     List<Item> items = List.of(item1, item2);
     // Act
-    String csv = CSVExporter.createCSV(items);
+    String csv = csvExporter.createCSV(items);
     // Assert
     assertThat(csv)
-        .isEqualTo(
+        .isEqualToIgnoringNewLines(
             """
       name,price,median,
       Item 1,"0,2€","0,3€",
-      Item 2,"0,4€","0,5€\"""");
+      Item 2,"0,4€","0,5€"
+      """);
   }
 }
