@@ -54,8 +54,9 @@ class SteamInventoryTrackerControllerTest {
     csvExporter = mock(CSVExporter.class);
 
     // Create controller with mocks
-    controller = new SteamInventoryTrackerController(
-        steamInventoryTrackerService, itemService, buyInfoService, priceService, csvExporter);
+    controller =
+        new SteamInventoryTrackerController(
+            steamInventoryTrackerService, itemService, buyInfoService, priceService, csvExporter);
 
     // Set up test data
     testPriceHistory = new ArrayList<>();
@@ -65,7 +66,7 @@ class SteamInventoryTrackerControllerTest {
     testPriceTrend = new PriceTrend(1.0, 0.1, 1.5, 0.15);
 
     // Set up mock behavior for priceService
-    when(priceService.getLatestPrice(any(Item.class))).thenReturn(testPriceHistory.get(0));
+    when(priceService.getLatestPrice(any(Item.class))).thenReturn(testPriceHistory.getFirst());
 
     // Set up mock behavior for csvExporter
     when(csvExporter.createCSV(any())).thenReturn("name,price,median");
@@ -126,14 +127,15 @@ class SteamInventoryTrackerControllerTest {
     // Assert
     assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
     assertThat(response.getBody()).hasSize(1);
-    assertThat(response.getBody().get(0)).isEqualTo(testItem);
+    assertThat(response.getBody().getFirst()).isEqualTo(testItem);
     verify(itemService, times(1)).addItem(any(Item.class));
   }
 
   @Test
   void shouldUpdatePrice() {
     // Arrange
-    when(itemService.updatePriceForItem(anyString(), anyDouble(), anyDouble())).thenReturn(testItem);
+    when(itemService.updatePriceForItem(anyString(), anyDouble(), anyDouble()))
+        .thenReturn(testItem);
 
     // Act
     ResponseEntity<Item> response = controller.updatePrice("Test Item", 10.0, 11.0);
@@ -188,7 +190,7 @@ class SteamInventoryTrackerControllerTest {
   }
 
   @Test
-  void shouldGetTotalInventoryValue() throws PriceHistoryException {
+  void shouldGetTotalInventoryValue() {
     // Arrange
     List<BuyInfo> buyInfos = List.of(testBuyInfo);
     when(buyInfoService.getAllBuyInfos()).thenReturn(buyInfos);
@@ -249,8 +251,8 @@ class SteamInventoryTrackerControllerTest {
         .thenReturn(testPriceTrend);
 
     // Act
-    ResponseEntity<PriceTrend> response = controller.getPriceTrendForItem(
-        "Test Item", 7, ChronoUnit.DAYS);
+    ResponseEntity<PriceTrend> response =
+        controller.getPriceTrendForItem("Test Item", 7, ChronoUnit.DAYS);
 
     // Assert
     assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);

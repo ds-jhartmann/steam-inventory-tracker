@@ -13,9 +13,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
-/**
- * Service for managing Item entities.
- */
+/** Service for managing Item entities. */
 @Service
 @AllArgsConstructor
 @Slf4j
@@ -76,7 +74,8 @@ public class ItemService {
    * @param timespan The timespan to calculate the trend over
    * @param chronoUnit The unit of time for the timespan
    * @return The price trend
-   * @throws ResponseStatusException if the item doesn't exist or there's an issue calculating the trend
+   * @throws ResponseStatusException if the item doesn't exist or there's an issue calculating the
+   *     trend
    */
   public PriceTrend getPriceTrendForItem(
       final String name, final int timespan, final ChronoUnit chronoUnit) {

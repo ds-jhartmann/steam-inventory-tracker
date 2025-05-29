@@ -12,6 +12,7 @@ import com.hinderegger.steaminventorytracker.service.PriceHistoryException;
 import com.hinderegger.steaminventorytracker.service.PriceService;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -27,15 +28,17 @@ class CSVExporterTest {
     csvExporter = new CSVExporter(priceService);
 
     // Set up default behavior for the mock
-    when(priceService.getLatestPrice(any())).thenAnswer(invocation -> {
-      Item item = invocation.getArgument(0);
-      if (item.getPriceHistory().isEmpty()) {
-        throw new PriceHistoryException("No price history for Item: " + item.getItemName());
-      }
-      return item.getPriceHistory().stream()
-          .max((p1, p2) -> p1.timestamp().compareTo(p2.timestamp()))
-          .orElseThrow();
-    });
+    when(priceService.getLatestPrice(any()))
+        .thenAnswer(
+            invocation -> {
+              Item item = invocation.getArgument(0);
+              if (item.getPriceHistory().isEmpty()) {
+                throw new PriceHistoryException("No price history for Item: " + item.getItemName());
+              }
+              return item.getPriceHistory().stream()
+                  .max(Comparator.comparing(Price::timestamp))
+                  .orElseThrow();
+            });
   }
 
   @Test
@@ -55,13 +58,16 @@ class CSVExporterTest {
     // Act
     String csv = csvExporter.createCSV(items);
     // Assert
-    assertThat(csv).isEqualTo("""
-      name,price,median,
-      Item 1,"0,00€","0,00€\"""");
+    assertThat(csv)
+        .isEqualTo(
+            """
+        name,price,median,
+        Item 1,"0,00€","0,00€"
+        """);
   }
 
   @Test
-  void shouldReturnItemWithOnlyPrice() throws PriceHistoryException {
+  void shouldReturnItemWithOnlyPrice() {
     // Arrange
     Price price = new Price(0.1, 0.2, LocalDateTime.parse("2023-12-20T12:59:59.999"));
     List<Price> priceHistory = new ArrayList<>(List.of(price));
@@ -70,13 +76,16 @@ class CSVExporterTest {
     // Act
     String csv = csvExporter.createCSV(items);
     // Assert
-    assertThat(csv).isEqualTo("""
+    assertThat(csv)
+        .isEqualTo(
+            """
       name,price,median,
-      Item 1,"0,1€","0,2€\"""");
+      Item 1,"0,1€","0,2€"
+      """);
   }
 
   @Test
-  void shouldReturnItemWithLatestPrice() throws PriceHistoryException {
+  void shouldReturnItemWithLatestPrice() {
     // Arrange
     Price price1 = new Price(0.1, 0.2, LocalDateTime.parse("2023-12-20T12:59:59.999"));
     Price price2 = new Price(0.2, 0.3, LocalDateTime.parse("2023-12-20T13:00:00.000"));
@@ -86,13 +95,16 @@ class CSVExporterTest {
     // Act
     String csv = csvExporter.createCSV(items);
     // Assert
-    assertThat(csv).isEqualTo("""
+    assertThat(csv)
+        .isEqualTo(
+            """
       name,price,median,
-      Item 1,"0,2€","0,3€\"""");
+      Item 1,"0,2€","0,3€"
+      """);
   }
 
   @Test
-  void shouldReturnItemsWithLatestPrice() throws PriceHistoryException {
+  void shouldReturnItemsWithLatestPrice() {
     // Arrange
     Price price1 = new Price(0.1, 0.2, LocalDateTime.parse("2023-12-20T12:59:59.999"));
     Price price2 = new Price(0.2, 0.3, LocalDateTime.parse("2023-12-20T13:00:00.000"));
@@ -111,6 +123,7 @@ class CSVExporterTest {
             """
       name,price,median,
       Item 1,"0,2€","0,3€",
-      Item 2,"0,4€","0,5€\"""");
+      Item 2,"0,4€","0,5€"
+      """);
   }
 }

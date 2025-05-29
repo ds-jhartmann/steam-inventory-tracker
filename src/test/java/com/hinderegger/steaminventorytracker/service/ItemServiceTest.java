@@ -5,7 +5,6 @@ import static org.assertj.core.api.Assertions.assertThatException;
 import static org.mockito.Mockito.mock;
 
 import com.hinderegger.steaminventorytracker.MongoDBTestContainerConfig;
-import com.hinderegger.steaminventorytracker.service.MockTimeProvider;
 import com.hinderegger.steaminventorytracker.model.Item;
 import com.hinderegger.steaminventorytracker.repository.ItemRepository;
 import java.util.List;

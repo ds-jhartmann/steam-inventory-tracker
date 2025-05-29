@@ -24,8 +24,8 @@ import org.springframework.test.context.ContextConfiguration;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
 /**
- * Integration test for the SteamInventoryTrackerService with MongoDB.
- * This test uses the Strategy pattern to test both synchronous and asynchronous item requests.
+ * Integration test for the SteamInventoryTrackerService with MongoDB. This test uses the Strategy
+ * pattern to test both synchronous and asynchronous item requests.
  */
 @DataMongoTest
 @Testcontainers
@@ -46,35 +46,41 @@ class RepositoryTest {
     syncStrategy = mock(SyncSteamRequestStrategy.class);
 
     // Configure the strategies to update items when requestItems is called
-    doAnswer(invocation -> {
-      List<Item> items = invocation.getArgument(0);
-      // Process each item - in a real scenario, this would call the Steam API
-      for (Item item : items) {
-        // Add a test price to each item
-        if (item.getItemName().equals("Test 1")) {
-          item.addPrice(new Price(5.79, 5.61, LocalDateTime.now()));
-        } else if (item.getItemName().equals("Test 2")) {
-          item.addPrice(new Price(0.99, 0.65, LocalDateTime.now()));
-        }
-        // Save the updated item
-        itemRepository.save(item);
-      }
-      return null;
-    }).when(asyncStrategy).requestItems(any());
+    doAnswer(
+            invocation -> {
+              List<Item> items = invocation.getArgument(0);
+              // Process each item - in a real scenario, this would call the Steam API
+              for (Item item : items) {
+                // Add a test price to each item
+                if (item.getItemName().equals("Test 1")) {
+                  item.addPrice(new Price(5.79, 5.61, LocalDateTime.now()));
+                } else if (item.getItemName().equals("Test 2")) {
+                  item.addPrice(new Price(0.99, 0.65, LocalDateTime.now()));
+                }
+                // Save the updated item
+                itemRepository.save(item);
+              }
+              return null;
+            })
+        .when(asyncStrategy)
+        .requestItems(any());
 
     // Configure the sync strategy similarly
-    doAnswer(invocation -> {
-      List<Item> items = invocation.getArgument(0);
-      for (Item item : items) {
-        if (item.getItemName().equals("Test 1")) {
-          item.addPrice(new Price(5.79, 5.61, LocalDateTime.now()));
-        } else if (item.getItemName().equals("Test 2")) {
-          item.addPrice(new Price(0.99, 0.65, LocalDateTime.now()));
-        }
-        itemRepository.save(item);
-      }
-      return null;
-    }).when(syncStrategy).requestItems(any());
+    doAnswer(
+            invocation -> {
+              List<Item> items = invocation.getArgument(0);
+              for (Item item : items) {
+                if (item.getItemName().equals("Test 1")) {
+                  item.addPrice(new Price(5.79, 5.61, LocalDateTime.now()));
+                } else if (item.getItemName().equals("Test 2")) {
+                  item.addPrice(new Price(0.99, 0.65, LocalDateTime.now()));
+                }
+                itemRepository.save(item);
+              }
+              return null;
+            })
+        .when(syncStrategy)
+        .requestItems(any());
 
     // Create the service with mock strategies
     testee = new SteamInventoryTrackerService(itemRepository, asyncStrategy, syncStrategy);
@@ -98,10 +104,10 @@ class RepositoryTest {
     // Assert
     List<Item> items = itemRepository.findAll();
     assertThat(items).hasSize(1);
-    assertThat(items.get(0).getItemName()).isEqualTo("Test 1");
-    assertThat(items.get(0).getPriceHistory()).isNotEmpty();
-    assertThat(items.get(0).getPriceHistory().get(0).price()).isEqualTo(5.79);
-    assertThat(items.get(0).getPriceHistory().get(0).median()).isEqualTo(5.61);
+    assertThat(items.getFirst().getItemName()).isEqualTo("Test 1");
+    assertThat(items.getFirst().getPriceHistory()).isNotEmpty();
+    assertThat(items.getFirst().getPriceHistory().getFirst().price()).isEqualTo(5.79);
+    assertThat(items.getFirst().getPriceHistory().getFirst().median()).isEqualTo(5.61);
     verify(asyncStrategy, times(1)).requestItems(any());
     verifyNoInteractions(syncStrategy);
   }
@@ -162,14 +168,17 @@ class RepositoryTest {
 
     // Create a custom strategy
     SteamRequestStrategy customStrategy = mock(SteamRequestStrategy.class);
-    doAnswer(invocation -> {
-      List<Item> items = invocation.getArgument(0);
-      for (Item i : items) {
-        i.addPrice(new Price(9.99, 9.99, LocalDateTime.now()));
-        itemRepository.save(i);
-      }
-      return null;
-    }).when(customStrategy).requestItems(any());
+    doAnswer(
+            invocation -> {
+              List<Item> items = invocation.getArgument(0);
+              for (Item i : items) {
+                i.addPrice(new Price(9.99, 9.99, LocalDateTime.now()));
+                itemRepository.save(i);
+              }
+              return null;
+            })
+        .when(customStrategy)
+        .requestItems(any());
 
     // Act
     testee.requestItemsWithStrategy(customStrategy);
@@ -177,7 +186,7 @@ class RepositoryTest {
     // Assert
     Item updatedItem = itemRepository.findById("Test 1").orElseThrow();
     assertThat(updatedItem.getPriceHistory()).isNotEmpty();
-    assertThat(updatedItem.getPriceHistory().get(0).price()).isEqualTo(9.99);
+    assertThat(updatedItem.getPriceHistory().getFirst().price()).isEqualTo(9.99);
 
     // Verify the correct strategy was used
     verify(customStrategy, times(1)).requestItems(any());

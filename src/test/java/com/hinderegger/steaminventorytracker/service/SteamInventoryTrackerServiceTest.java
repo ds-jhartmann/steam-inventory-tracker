@@ -1,7 +1,5 @@
 package com.hinderegger.steaminventorytracker.service;
 
-import static org.assertj.core.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 import com.hinderegger.steaminventorytracker.model.Item;
@@ -17,8 +15,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 /**
- * Tests for the SteamInventoryTrackerService.
- * This test class uses mocks for the strategy implementations to test the service's behavior.
+ * Tests for the SteamInventoryTrackerService. This test class uses mocks for the strategy
+ * implementations to test the service's behavior.
  */
 class SteamInventoryTrackerServiceTest {
 

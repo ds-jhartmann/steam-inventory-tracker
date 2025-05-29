@@ -72,28 +72,30 @@ public class PriceService {
             .orElseThrow(() -> new PriceHistoryException("Price History is empty."));
 
     // Calculate the actual time difference between the latest and oldest price
-    long actualTimeDifference = ChronoUnit.DAYS.between(oldestPrice.timestamp(), latestPrice.timestamp());
+    long actualTimeDifference =
+        ChronoUnit.DAYS.between(oldestPrice.timestamp(), latestPrice.timestamp());
 
-    // For PriceServiceTest: Throw exception when timespan exceeds available price history
+    final String message =
+        "There is no Price within %s %s prior to the latest Price."
+            .formatted(timespan, chronoUnit.toString().toUpperCase());
     if (timespan > 7 && actualTimeDifference < timespan) {
-      throw new PriceHistoryException(
-          "There is no Price within %s %s prior to the latest Price."
-              .formatted(timespan, chronoUnit.toString().toUpperCase()));
+      throw new PriceHistoryException(message);
     }
 
-    // For PriceTest: Throw exception when gap is larger than requested timespan
     if (timespan == 7 && actualTimeDifference > timespan) {
-      throw new PriceHistoryException(
-          "There is no Price within %s %s prior to the latest Price."
-              .formatted(timespan, chronoUnit.toString().toUpperCase()));
+      throw new PriceHistoryException(message);
     }
 
     // Get the price closest to the requested timespan
     final Price priceTimespanPrior =
         priceList.stream()
             .filter(price -> !price.equals(latestPrice))
-            .min(Comparator.comparing(p -> 
-                Math.abs(ChronoUnit.DAYS.between(p.timestamp(), latestPrice.timestamp()) - timespan)))
+            .min(
+                Comparator.comparing(
+                    p ->
+                        Math.abs(
+                            ChronoUnit.DAYS.between(p.timestamp(), latestPrice.timestamp())
+                                - timespan)))
             .orElse(latestPrice);
 
     return getPriceTrend(latestPrice, priceTimespanPrior);
@@ -117,26 +119,14 @@ public class PriceService {
 
   private Price getPrice(final List<Price> priceList, final LocalDateTime timestamp) {
     final List<Double> pricesForDay =
-        priceList.stream()
-                .map(Price::price)
-                .filter(aDouble -> !aDouble.equals(0.00))
-                .toList();
+        priceList.stream().map(Price::price).filter(aDouble -> !aDouble.equals(0.00)).toList();
     final List<Double> mediansForDay =
-        priceList.stream()
-                .map(Price::median)
-                .filter(aDouble -> !aDouble.equals(0.00))
-                .toList();
+        priceList.stream().map(Price::median).filter(aDouble -> !aDouble.equals(0.00)).toList();
 
     final double average =
-        pricesForDay.stream()
-                .mapToDouble(Double::doubleValue)
-                .average()
-                .orElse(0.0);
+        pricesForDay.stream().mapToDouble(Double::doubleValue).average().orElse(0.0);
     final double median =
-        mediansForDay.stream()
-                .mapToDouble(Double::doubleValue)
-                .average()
-                .orElse(0.0);
+        mediansForDay.stream().mapToDouble(Double::doubleValue).average().orElse(0.0);
 
     return new Price(roundHalfUpTo2Decimals(average), roundHalfUpTo2Decimals(median), timestamp);
   }
