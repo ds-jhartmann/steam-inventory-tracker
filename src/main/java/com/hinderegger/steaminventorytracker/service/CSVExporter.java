@@ -48,7 +48,7 @@ public class CSVExporter {
       latestPrice = (price.price() + "€").replace(".", ",");
       medianPrice = (price.median() + "€").replace(".", ",");
     } catch (PriceHistoryException e) {
-      log.error("Exception while parsing Price for item {}: {}", item.getItemName(), e.getMessage());
+      log.warn("Exception while parsing Price for item {}: {}", item.getItemName(), e.getMessage());
       latestPrice = "0,00€";
       medianPrice = "0,00€";
     }

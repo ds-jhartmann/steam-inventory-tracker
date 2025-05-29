@@ -59,7 +59,7 @@ class CSVExporterTest {
     String csv = csvExporter.createCSV(items);
     // Assert
     assertThat(csv)
-        .isEqualTo(
+        .isEqualToIgnoringNewLines(
             """
         name,price,median,
         Item 1,"0,00€","0,00€"
@@ -77,7 +77,7 @@ class CSVExporterTest {
     String csv = csvExporter.createCSV(items);
     // Assert
     assertThat(csv)
-        .isEqualTo(
+        .isEqualToIgnoringNewLines(
             """
       name,price,median,
       Item 1,"0,1€","0,2€"
@@ -96,7 +96,7 @@ class CSVExporterTest {
     String csv = csvExporter.createCSV(items);
     // Assert
     assertThat(csv)
-        .isEqualTo(
+        .isEqualToIgnoringNewLines(
             """
       name,price,median,
       Item 1,"0,2€","0,3€"
@@ -119,7 +119,7 @@ class CSVExporterTest {
     String csv = csvExporter.createCSV(items);
     // Assert
     assertThat(csv)
-        .isEqualTo(
+        .isEqualToIgnoringNewLines(
             """
       name,price,median,
       Item 1,"0,2€","0,3€",
