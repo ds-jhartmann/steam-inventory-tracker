@@ -63,8 +63,6 @@ public class PriceService {
             .max(Comparator.comparing(Price::timestamp))
             .orElseThrow(() -> new PriceHistoryException("Price History is empty."));
 
-    final LocalDateTime timespanPrior = latestPrice.timestamp().minus(timespan, chronoUnit);
-
     // Find the oldest price in the history
     final Price oldestPrice =
         priceList.stream()
