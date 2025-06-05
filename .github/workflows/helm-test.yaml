@@ -14,14 +14,14 @@ on:
     inputs:
       node_image:
         description: 'kindest/node image for k8s kind cluster'
-        default: ${{ env.KINDEST_NODE_VERSION }}
+        default: '${{ env.KINDEST_NODE_VERSION }}'
         required: false
         type: string
   workflow_call: # Trigger by another workflow
     inputs:
       node_image:
         description: 'kindest/node image for k8s kind cluster'
-        default: ${{ env.KINDEST_NODE_VERSION }}
+        default: '${{ env.KINDEST_NODE_VERSION }}'
         required: false
         type: string
 
