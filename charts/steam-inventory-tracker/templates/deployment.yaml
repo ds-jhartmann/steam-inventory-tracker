@@ -33,9 +33,6 @@ spec:
             {{- toYaml .Values.securityContext | nindent 12 }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
-          volumeMounts:
-            - name: application-config
-              mountPath: /app/config
           ports:
             - name: http
               containerPort: {{ .Values.service.port }}
@@ -43,36 +40,36 @@ spec:
             - name: actuator
               containerPort: {{ .Values.service.actuatorPort }}
               protocol: TCP
+          env:
+            - name: SPRING_DATA_MONGODB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "steam-inventory-tracker.fullname" . }}-mongodb-secret
+                  key: mongodb-root-password
+            - name: SPRING_DATA_MONGODB_AUTHENTICATION_DATABASE
+              value: {{ .Values.sit.mongodb.authenticationdatabase | quote }}
+            - name: SPRING_DATA_MONGODB_USERNAME
+              value: {{ .Values.mongodb.auth.rootUser | quote }}
+            - name: SPRING_DATA_MONGODB_DATABASE
+              value: {{ .Values.sit.mongodb.database | quote }}
+            - name: SPRING_DATA_MONGODB_PORT
+              value: {{ .Values.sit.mongodb.port | quote }}
+            - name: SPRING_DATA_MONGODB_HOST
+              value: {{ tpl .Values.sit.mongodb.host . | quote }}
+            - name: SPRING_DATA_MONGODB_AUTO_INDEX_CREATION
+              value: {{ .Values.sit.mongodb.autoindexcreation | quote }}
           livenessProbe:
             httpGet:
-              path: "/actuator/health/liveness"
+              path: /actuator/health
               port: actuator
-              scheme: HTTP
-            initialDelaySeconds: {{ .Values.livenessProbe.initialDelaySeconds }}
-            periodSeconds: {{ .Values.livenessProbe.periodSeconds }}
-            timeoutSeconds: {{ .Values.livenessProbe.timeoutSeconds }}
-            successThreshold: {{ .Values.livenessProbe.successThreshold }}
-            failureThreshold: {{ .Values.livenessProbe.failureThreshold }}
-            # @url: https://cloud.google.com/blog/products/containers-kubernetes/kubernetes-best-practices-setting-up-health-checks-with-readiness-and-liveness-probes
+            {{- toYaml .Values.livenessProbe | nindent 12 }}
           readinessProbe:
             httpGet:
-              path: "/actuator/health/readiness"
+              path: /actuator/health
               port: actuator
-              scheme: HTTP
-            initialDelaySeconds: {{ .Values.readinessProbe.initialDelaySeconds }}
-            periodSeconds: {{ .Values.readinessProbe.periodSeconds }}
-            timeoutSeconds: {{ .Values.readinessProbe.timeoutSeconds }}
-            successThreshold: {{ .Values.readinessProbe.successThreshold }}
-            failureThreshold: {{ .Values.readinessProbe.failureThreshold }}
+            {{- toYaml .Values.readinessProbe | nindent 12 }}
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
-      volumes:
-        - name: application-config
-          configMap:
-            name: {{ include "steam-inventory-tracker.fullname" . }}-configmap
-            items:
-              - key: application.yaml
-                path: application.yaml
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}

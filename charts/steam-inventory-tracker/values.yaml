@@ -10,12 +10,6 @@ image:
 
 imagePullSecrets: []
 
-imageCredentials:
-  registry: docker.io
-  username: 
-  password: 
-  email: 
-
 serviceAccount:
   # Specifies whether a service account should be created
   create: true
@@ -103,15 +97,13 @@ readinessProbe:
 sit:
   mongodb:
     authenticationdatabase: admin
-    username: root
-    password: iAGexqH3Me
     database: steam-inventory-tracker
     port: 27017
-    host: sit-mongodb
+    host: "{{ .Release.Name }}-mongodb"
     autoindexcreation: true
 
-# MongoBD configuration
+# MongoDB dependency configuration
 mongodb:
   auth:
     rootUser: root
-    rootPassword: iAGexqH3Me
+    existingSecret: "{{ .Release.Name }}-steam-inventory-tracker-mongodb-secret"
