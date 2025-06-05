@@ -9,7 +9,8 @@ on:
 
 env:
   TARGET_PLATFORMS: linux/amd64,linux/arm64
-
+  IMAGE_NAMESPACE: jhrtmnn
+  IMAGE_NAME: steam-inventory-tracker
 jobs:
   build:
     name: Build and Test
@@ -72,7 +73,14 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: jhrtmnn/steam-inventory-tracker
+          images: ${{ env.IMAGE_NAMESPACE }}/${{ env.IMAGE_NAME }}
+          tags:
+            type=ref,event=branch
+            type=ref,event=pr
+            type=sha
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}
+            type=semver,pattern={{major}}.{{minor}}
 
       - name: Login to Docker Hub
         if: github.event_name != 'pull_request'
@@ -97,8 +105,8 @@ jobs:
       - name: Update Docker Hub description
         env:
           DOCKER_HUB_USER: ${{ secrets.DOCKER_HUB_USER }}
-          IMAGE_NAMESPACE: jhrtmnn
-          IMAGE_NAME: steam-inventory-tracker
+          IMAGE_NAMESPACE: ${{ env.IMAGE_NAMESPACE }}
+          IMAGE_NAME: ${{ env.IMAGE_NAME }}
         if: github.event_name != 'pull_request'
         uses: peter-evans/dockerhub-description@v4
         with:
