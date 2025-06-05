@@ -1,11 +1,5 @@
 name: Lint and Test Charts
 
-env:
-  KINDEST_NODE_VERSION: 'kindest/node:v1.31.9'
-  DOCKER_REGISTRY: kind-registry:5000
-  IMAGE_NAME: steam-inventory-tracker
-  IMAGE_TAG: testing
-
 on:
   pull_request:
     paths:
@@ -14,16 +8,22 @@ on:
     inputs:
       node_image:
         description: 'kindest/node image for k8s kind cluster'
-        default: '${{ env.KINDEST_NODE_VERSION }}'
+        default: 'kindest/node:v1.31.9'
         required: false
         type: string
   workflow_call: # Trigger by another workflow
     inputs:
       node_image:
         description: 'kindest/node image for k8s kind cluster'
-        default: '${{ env.KINDEST_NODE_VERSION }}'
+        default: 'kindest/node:v1.31.9'
         required: false
         type: string
+
+env:
+  KINDEST_NODE_VERSION: 'kindest/node:v1.31.9'
+  DOCKER_REGISTRY: kind-registry:5000
+  IMAGE_NAME: steam-inventory-tracker
+  IMAGE_TAG: testing
 
 jobs:
   lint-test:
