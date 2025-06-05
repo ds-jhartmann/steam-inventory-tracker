@@ -61,8 +61,13 @@ Create the name of the service account to use
 {{- end }}
 {{- end }}
 
-{{- define "imagePullSecret" }}
-{{- with .Values.imageCredentials }}
-{{- printf "{\"auths\":{\"%s\":{\"username\":\"%s\",\"password\":\"%s\",\"email\":\"%s\",\"auth\":\"%s\"}}}" .registry .username .password .email (printf "%s:%s" .username .password | b64enc) | b64enc }}
-{{- end }}
+{{/*
+MongoDB secret name
+*/}}
+{{- define "steam-inventory-tracker.mongodb.secretName" -}}
+    {{- if .Values.mongodb.auth.existingSecret -}}
+        {{- .Values.mongodb.auth.existingSecret -}}
+    {{- else -}}
+        {{- printf "%s-mongodb-secret" (include "steam-inventory-tracker.fullname" .) -}}
+    {{- end -}}
 {{- end }}

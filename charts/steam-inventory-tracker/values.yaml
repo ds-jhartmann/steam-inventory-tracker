@@ -7,14 +7,9 @@ replicaCount: 1
 image:
   repository: jhrtmnn/steam-inventory-tracker
   pullPolicy: IfNotPresent
+  tag: main
 
 imagePullSecrets: []
-
-imageCredentials:
-  registry: docker.io
-  username: 
-  password: 
-  email: 
 
 serviceAccount:
   # Specifies whether a service account should be created
@@ -28,7 +23,7 @@ serviceAccount:
 podAnnotations: {}
 
 podSecurityContext:
-   fsGroup: 2000
+  fsGroup: 2000
 
 securityContext:
   capabilities:
@@ -103,15 +98,14 @@ readinessProbe:
 sit:
   mongodb:
     authenticationdatabase: admin
-    username: root
-    password: iAGexqH3Me
     database: steam-inventory-tracker
     port: 27017
-    host: sit-mongodb
+    host: "{{ .Release.Name }}-mongodb"
     autoindexcreation: true
 
-# MongoBD configuration
+# MongoDB dependency configuration
 mongodb:
   auth:
     rootUser: root
-    rootPassword: iAGexqH3Me
+    # Or specify a custom secret name to use an existing one
+    existingSecret: "mongodb-secret"
