@@ -44,7 +44,7 @@ spec:
             - name: SPRING_DATA_MONGODB_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: {{ include "steam-inventory-tracker.fullname" . }}-mongodb-secret
+                  name: {{ include "steam-inventory-tracker.mongodb.secretName" . }}
                   key: mongodb-root-password
             - name: SPRING_DATA_MONGODB_AUTHENTICATION_DATABASE
               value: {{ .Values.sit.mongodb.authenticationdatabase | quote }}

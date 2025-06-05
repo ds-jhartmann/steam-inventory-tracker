@@ -7,6 +7,7 @@ replicaCount: 1
 image:
   repository: jhrtmnn/steam-inventory-tracker
   pullPolicy: IfNotPresent
+  tag: main
 
 imagePullSecrets: []
 
@@ -106,4 +107,5 @@ sit:
 mongodb:
   auth:
     rootUser: root
-    existingSecret: "{{ .Release.Name }}-steam-inventory-tracker-mongodb-secret"
+    # Or specify a custom secret name to use an existing one
+    existingSecret: "mongodb-secret"
