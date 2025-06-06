@@ -47,7 +47,7 @@ public class SteamInventoryTrackerController {
       @RequestParam final Integer amount,
       @RequestParam final Double buyPrice) {
     log.info(
-        "Registering Buyer info for '{}', amount: '{}', buy price: '{}'", name, amount, buyPrice);
+        "Registering buy info for '{}', amount: '{}', buy price: '{}'", name, amount, buyPrice);
     final BuyInfo buyInfo = buyInfoService.addBuyInfo(name, amount, buyPrice);
     return ResponseEntity.ok(buyInfo);
   }
