@@ -60,7 +60,9 @@ public class ItemService {
   public Item getItemByName(final String name) {
     final Optional<Item> itemByName = itemRepository.findById(name);
     return itemByName.orElseThrow(
-        () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "No job exists with id " + name));
+        () ->
+            new ResponseStatusException(
+                HttpStatus.NOT_FOUND, "Item '" + name + "' does not exist."));
   }
 
   public List<Item> getAllItems() {
