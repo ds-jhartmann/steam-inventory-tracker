@@ -7,6 +7,7 @@ import static org.mockito.Mockito.mock;
 import com.hinderegger.steaminventorytracker.MongoDBTestContainerConfig;
 import com.hinderegger.steaminventorytracker.model.Item;
 import com.hinderegger.steaminventorytracker.repository.ItemRepository;
+import java.time.LocalDateTime;
 import java.util.List;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -136,11 +137,15 @@ class ItemServiceTest {
     testee.addItem(item);
 
     // Act
-    testee.updatePriceForItem("Test Item", 0.1, 0.2);
+    Item updatedItem = testee.updatePriceForItem("Test Item", 0.1, 0.2);
 
     // Assert
-    Item updatedItem = testee.getItemByName("Test Item");
     assertThat(updatedItem.getItemName()).isEqualTo("Test Item");
+    assertThat(updatedItem.getPriceHistory()).hasSize(1);
+    assertThat(updatedItem.getPriceHistory().get(0).price()).isEqualTo(0.1);
+    assertThat(updatedItem.getPriceHistory().get(0).median()).isEqualTo(0.2);
+    assertThat(updatedItem.getPriceHistory().get(0).timestamp())
+        .isEqualTo(LocalDateTime.of(2023, 12, 20, 15, 0, 0));
   }
 
   @Test
