@@ -214,7 +214,7 @@ class PriceTest {
   }
 
   @Test
-  void shouldShouldThrowPriceExceptionIfHistoryIsEmtpy() {
+  void shouldThrowPriceExceptionIfHistoryIsEmpty() {
     // Arrange
     List<Price> priceHistory = new ArrayList<>(List.of());
     Item item = new Item("Item 1", priceHistory);
