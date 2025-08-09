@@ -98,3 +98,5 @@ readinessProbe:
 sit:
   mongodb:
     uri: mongodb://localhost/test
+
+existingSecret: ""
