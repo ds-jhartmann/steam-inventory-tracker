@@ -41,23 +41,13 @@ spec:
               containerPort: {{ .Values.service.actuatorPort }}
               protocol: TCP
           env:
-            - name: SPRING_DATA_MONGODB_PASSWORD
+            - name: SPRING_DATA_MONGODB_URI
               valueFrom:
                 secretKeyRef:
                   name: {{ include "steam-inventory-tracker.mongodb.secretName" . }}
-                  key: mongodb-root-password
-            - name: SPRING_DATA_MONGODB_AUTHENTICATION_DATABASE
-              value: {{ .Values.sit.mongodb.authenticationdatabase | quote }}
-            - name: SPRING_DATA_MONGODB_USERNAME
-              value: {{ .Values.mongodb.auth.rootUser | quote }}
+                  key: mongodb-uri
             - name: SPRING_DATA_MONGODB_DATABASE
               value: {{ .Values.sit.mongodb.database | quote }}
-            - name: SPRING_DATA_MONGODB_PORT
-              value: {{ .Values.sit.mongodb.port | quote }}
-            - name: SPRING_DATA_MONGODB_HOST
-              value: {{ tpl .Values.sit.mongodb.host . | quote }}
-            - name: SPRING_DATA_MONGODB_AUTO_INDEX_CREATION
-              value: {{ .Values.sit.mongodb.autoindexcreation | quote }}
           livenessProbe:
             httpGet:
               path: /actuator/health

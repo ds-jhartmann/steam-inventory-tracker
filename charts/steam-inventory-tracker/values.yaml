@@ -97,15 +97,4 @@ readinessProbe:
 # Steam inventory track configuration
 sit:
   mongodb:
-    authenticationdatabase: admin
-    database: steam-inventory-tracker
-    port: 27017
-    host: "{{ .Release.Name }}-mongodb"
-    autoindexcreation: true
-
-# MongoDB dependency configuration
-mongodb:
-  auth:
-    rootUser: root
-    # Or specify a custom secret name to use an existing one
-    existingSecret: "mongodb-secret"
+    uri: mongodb://localhost/test
