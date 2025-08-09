@@ -61,7 +61,7 @@ class CSVExporterTest {
     assertThat(csv)
         .isEqualToIgnoringNewLines(
             """
-        name,price,median,
+        name,price,median
         Item 1,"0,00€","0,00€"
         """);
   }
@@ -79,7 +79,7 @@ class CSVExporterTest {
     assertThat(csv)
         .isEqualToIgnoringNewLines(
             """
-      name,price,median,
+      name,price,median
       Item 1,"0,1€","0,2€"
       """);
   }
@@ -98,7 +98,7 @@ class CSVExporterTest {
     assertThat(csv)
         .isEqualToIgnoringNewLines(
             """
-      name,price,median,
+      name,price,median
       Item 1,"0,2€","0,3€"
       """);
   }
@@ -121,8 +121,51 @@ class CSVExporterTest {
     assertThat(csv)
         .isEqualToIgnoringNewLines(
             """
-      name,price,median,
-      Item 1,"0,2€","0,3€",
+      name,price,median
+      Item 1,"0,2€","0,3€"
+      Item 2,"0,4€","0,5€"
+      """);
+  }
+
+  @Test
+  void shouldReturnHeaderIfProvidedItemsAreEmpty() {
+    // Arrange
+    List<Item> items = List.of();
+    // Act
+    String csv = csvExporter.createCSV(items);
+    // Assert
+    assertThat(csv).isEqualTo("name,price,median");
+  }
+
+  @Test
+  void shouldFormatSingleItemWithOnePriceCorrectly() {
+    // Arrange
+    List<Item> items = List.of(new Item("Item 1", List.of(new Price(1.23, 1.5, LocalDateTime.parse("2023-12-20T12:00:00")))));
+    // Act
+    String csv = csvExporter.createCSV(items);
+    // Assert
+    assertThat(csv)
+        .isEqualToIgnoringNewLines(
+            """
+      name,price,median
+      Item 1,"1,23€","1,5€"
+      """);
+  }
+
+  @Test
+  void shouldFormatMultipleItemsWithSinglePrice() {
+    // Arrange
+    List<Item> items = List.of(
+        new Item("Item 1", List.of(new Price(0.2, 0.3, LocalDateTime.parse("2023-12-20T12:00:00")))),
+        new Item("Item 2", List.of(new Price(0.4, 0.5, LocalDateTime.parse("2023-12-20T12:01:00")))));
+    // Act
+    String csv = csvExporter.createCSV(items);
+    // Assert
+    assertThat(csv)
+        .isEqualToIgnoringNewLines(
+            """
+      name,price,median
+      Item 1,"0,2€","0,3€"
       Item 2,"0,4€","0,5€"
       """);
   }

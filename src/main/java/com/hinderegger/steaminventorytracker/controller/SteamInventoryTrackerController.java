@@ -136,7 +136,7 @@ public class SteamInventoryTrackerController {
   @GetMapping(path = "/exportAsCSV", produces = "text/csv")
   public ResponseEntity<String> getAllCurrentItemsAsCSV() {
     log.info("Exporting latest prices as CSV.");
-    final List<Item> items = itemService.getAllItems();
+    final List<Item> items = itemService.getAllItemsWithLatestPrice();
     final String csv = csvExporter.createCSV(items);
     return ResponseEntity.ok(csv);
   }

@@ -1,10 +1,10 @@
 steam:
   baseurl: "https://steamcommunity.com/market/priceoverview/?"
   path: "appid=730&currency=3&market_hash_name="
-  timeoutDuration: PT30M #
+  timeoutDuration: PT10S # the default wait for permission duration
   limitRefreshPeriod: PT30S # wait time between periods
   limitForPeriod: 1 # apply the wait duration for every request
-  sleep-duration: 15 # sleep duration between requests in seconds. Only relevant for the HttpClient
+  sleep-duration: 30 # sleep duration between requests in seconds. Only relevant for the HttpClient
   # Retry configuration
   max-retry-attempts: 3 # maximum number of retry attempts
   retry-initial-backoff: PT1S # initial backoff duration

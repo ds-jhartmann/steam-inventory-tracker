@@ -233,7 +233,7 @@ class SteamInventoryTrackerControllerTest {
   void shouldExportAsCSV() {
     // Arrange
     List<Item> items = List.of(testItem);
-    when(itemService.getAllItems()).thenReturn(items);
+    when(itemService.getAllItemsWithLatestPrice()).thenReturn(items);
 
     // Act
     ResponseEntity<String> response = controller.getAllCurrentItemsAsCSV();
@@ -241,7 +241,7 @@ class SteamInventoryTrackerControllerTest {
     // Assert
     assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
     assertThat(response.getBody()).isNotEmpty();
-    verify(itemService, times(1)).getAllItems();
+    verify(itemService, times(1)).getAllItemsWithLatestPrice();
   }
 
   @Test
