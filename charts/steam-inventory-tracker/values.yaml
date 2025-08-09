@@ -97,6 +97,7 @@ readinessProbe:
 # Steam inventory track configuration
 sit:
   mongodb:
+    database: steam-inventory-tracker
     uri: mongodb://localhost/test
 
 existingSecret: ""
