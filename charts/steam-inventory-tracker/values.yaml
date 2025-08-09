@@ -108,6 +108,6 @@ sit:
     #         │ │  │  │ │ ┌───────────── day of the week (0 - 7)
     #         │ │  │  │ │ │          (or MON-SUN -- 0 or 7 is Sunday)
     #         │ │  │  │ │ │
-    request: "0 0 */4 * * *" # every 4 hours
+    request: "0 0 */4 * * *"  # every 4 hours
 
 existingSecret: ""
