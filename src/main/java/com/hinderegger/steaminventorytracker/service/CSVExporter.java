@@ -31,7 +31,7 @@ public class CSVExporter {
           final String join = createCSVRowForItem(item);
           result.add(join);
         });
-    return String.join(",\n", result);
+    return String.join("\n", result);
   }
 
   /**

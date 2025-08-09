@@ -1,5 +1,5 @@
 image:
-  tag: sha-$ARGOCD_APP_REVISION_SHORT
+  tag: sha-${ARGOCD_APP_REVISION_SHORT}
 
 ingress:
   enabled: true

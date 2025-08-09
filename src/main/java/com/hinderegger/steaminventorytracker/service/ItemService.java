@@ -70,6 +70,13 @@ public class ItemService {
   }
 
   /**
+   * Returns all items with their latest price only (DB-side projection), for efficient export.
+   */
+  public List<Item> getAllItemsWithLatestPrice() {
+    return itemRepository.findAllWithLatestPrice();
+  }
+
+  /**
    * Gets the price trend for an item over a specific timespan.
    *
    * @param name The name of the item
