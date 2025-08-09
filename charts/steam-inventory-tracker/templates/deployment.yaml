@@ -48,6 +48,8 @@ spec:
                   key: mongodb-uri
             - name: SPRING_DATA_MONGODB_DATABASE
               value: {{ .Values.sit.mongodb.database | quote }}
+            - name: SCHEDULER_REQUEST
+              value: {{ .Values.sit.scheduler.request | default "0 0 */3 * * *" | quote }}
           livenessProbe:
             httpGet:
               path: /actuator/health

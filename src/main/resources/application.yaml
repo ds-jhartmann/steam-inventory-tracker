@@ -40,8 +40,9 @@ management: # Spring management API config, see https://spring.io/guides/gs/cent
         enabled: true
       group:
         readiness:
-          include: readinessState, diskSpace
-      show-details: always
+          include: ping, mongo
+        liveness:
+          include: ping
   health:
     livenessstate:
       enabled: true

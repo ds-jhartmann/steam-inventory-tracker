@@ -84,20 +84,30 @@ affinity: {}
 livenessProbe:
   failureThreshold: 6
   initialDelaySeconds: 30
-  periodSeconds: 10
+  periodSeconds: 30
   successThreshold: 1
-  timeoutSeconds: 1
+  timeoutSeconds: 3
 readinessProbe:
   failureThreshold: 3
   initialDelaySeconds: 30
-  periodSeconds: 10
+  periodSeconds: 30
   successThreshold: 1
-  timeoutSeconds: 1
+  timeoutSeconds: 3
 
 # Steam inventory track configuration
 sit:
   mongodb:
     database: steam-inventory-tracker
     uri: mongodb://localhost/test
+  scheduler:
+    #         ┌───────────── second (0-59)
+    #         │ ┌───────────── minute (0 - 59)
+    #         │ │  ┌───────────── hour (0 - 23)
+    #         │ │  │  ┌───────────── day of the month (1 - 31)
+    #         │ │  │  │ ┌───────────── month (1 - 12) (or JAN-DEC)
+    #         │ │  │  │ │ ┌───────────── day of the week (0 - 7)
+    #         │ │  │  │ │ │          (or MON-SUN -- 0 or 7 is Sunday)
+    #         │ │  │  │ │ │
+    request: "0 0 */4 * * *" # every 4 hours
 
 existingSecret: ""
