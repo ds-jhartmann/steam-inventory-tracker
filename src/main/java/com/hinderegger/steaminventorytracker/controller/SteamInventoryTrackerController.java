@@ -69,13 +69,13 @@ public class SteamInventoryTrackerController {
   }
 
   @PostMapping(path = "/updatePrice")
-  public ResponseEntity<Item> updatePrice(
+  public ResponseEntity<Price> updatePrice(
       @RequestParam final String name,
       @RequestParam final double price,
       @RequestParam final double median) {
     log.info("Updating price for Item '{}' with price '{}' and median '{}'", name, price, median);
-    final Item item = itemService.updatePriceForItem(name, price, median);
-    return ResponseEntity.ok(item);
+    final Price updatedPrice = itemService.updatePriceForItem(name, price, median);
+    return ResponseEntity.ok(updatedPrice);
   }
 
   @GetMapping(path = "/getItem")

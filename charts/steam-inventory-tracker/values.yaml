@@ -7,7 +7,7 @@ replicaCount: 1
 image:
   repository: jhrtmnn/steam-inventory-tracker
   pullPolicy: IfNotPresent
-  tag: main
+  tag: local
 
 imagePullSecrets: []
 
@@ -96,9 +96,12 @@ readinessProbe:
 
 # Steam inventory track configuration
 sit:
-  mongodb:
-    database: steam-inventory-tracker
-    uri: mongodb://localhost/test
+  datasource:
+    url: jdbc:postgresql://{{ .Release.Name }}-postgresql:5432/sit
+    username: user
+    password: password
+    existingSecret: ""
+
   scheduler:
     #         ┌───────────── second (0-59)
     #         │ ┌───────────── minute (0 - 59)
@@ -110,4 +113,11 @@ sit:
     #         │ │  │  │ │ │
     request: "0 0 */4 * * *"  # every 4 hours
 
-existingSecret: ""
+postgresql:
+  global:
+    postgresql:
+      auth:
+        username: user
+        database: "sit"
+        password: password
+        postgresPassword: "postgres"

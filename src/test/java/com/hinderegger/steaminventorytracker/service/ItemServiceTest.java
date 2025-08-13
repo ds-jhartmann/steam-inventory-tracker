@@ -4,26 +4,30 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatException;
 import static org.mockito.Mockito.mock;
 
-import com.hinderegger.steaminventorytracker.MongoDBTestContainerConfig;
 import com.hinderegger.steaminventorytracker.model.Item;
-import com.hinderegger.steaminventorytracker.repository.ItemRepository;
+import com.hinderegger.steaminventorytracker.model.Price;
+import com.hinderegger.steaminventorytracker.repository.jpa.ItemRepository;
+import com.hinderegger.steaminventorytracker.repository.jpa.PriceRepository;
 import java.time.LocalDateTime;
 import java.util.List;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.data.mongo.DataMongoTest;
+import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.web.server.ResponseStatusException;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
-@DataMongoTest
+@org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest
 @Testcontainers
-@ContextConfiguration(classes = MongoDBTestContainerConfig.class)
+@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
+@ContextConfiguration(
+    initializers = com.hinderegger.steaminventorytracker.PostgresTestContainerConfig.class)
 class ItemServiceTest {
 
   @Autowired private ItemRepository itemRepository;
+  @Autowired private PriceRepository priceRepository;
   private ItemService testee;
   private MockTimeProvider mockTimeProvider;
 
@@ -31,7 +35,7 @@ class ItemServiceTest {
   void setUp() {
     mockTimeProvider = new MockTimeProvider();
     PriceService priceService = mock(PriceService.class);
-    testee = new ItemService(itemRepository, mockTimeProvider, priceService);
+    testee = new ItemService(itemRepository, mockTimeProvider, priceService, priceRepository);
   }
 
   @AfterEach
@@ -137,14 +141,13 @@ class ItemServiceTest {
     testee.addItem(item);
 
     // Act
-    Item updatedItem = testee.updatePriceForItem("Test Item", 0.1, 0.2);
+  Price updatedItem = testee.updatePriceForItem("Test Item", 0.1, 0.2);
 
     // Assert
-    assertThat(updatedItem.getItemName()).isEqualTo("Test Item");
-    assertThat(updatedItem.getPriceHistory()).hasSize(1);
-    assertThat(updatedItem.getPriceHistory().get(0).price()).isEqualTo(0.1);
-    assertThat(updatedItem.getPriceHistory().get(0).median()).isEqualTo(0.2);
-    assertThat(updatedItem.getPriceHistory().get(0).timestamp())
+    assertThat(updatedItem).isNotNull();
+    assertThat(updatedItem.price()).isEqualTo(0.1);
+    assertThat(updatedItem.median()).isEqualTo(0.2);
+    assertThat(updatedItem.timestamp())
         .isEqualTo(LocalDateTime.of(2023, 12, 20, 15, 0, 0));
   }
 

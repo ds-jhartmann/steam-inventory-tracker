@@ -62,12 +62,12 @@ Create the name of the service account to use
 {{- end }}
 
 {{/*
-MongoDB secret name
+DB secret name
 */}}
-{{- define "steam-inventory-tracker.mongodb.secretName" -}}
-    {{- if .Values.existingSecret -}}
-        {{- .Values.existingSecret -}}
+{{- define "steam-inventory-tracker.db.secretName" -}}
+    {{- if .Values.sit.datasource.existingSecret -}}
+        {{- .Values.sit.datasource.existingSecret -}}
     {{- else -}}
-        {{- printf "%s-mongodb-secret" (include "steam-inventory-tracker.fullname" .) -}}
+        {{- printf "%s-db-secret" (include "steam-inventory-tracker.fullname" .) -}}
     {{- end -}}
 {{- end }}

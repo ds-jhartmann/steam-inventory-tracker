@@ -1,15 +1,13 @@
 package com.hinderegger.steaminventorytracker.service;
 
 import com.hinderegger.steaminventorytracker.model.Item;
-import com.hinderegger.steaminventorytracker.repository.ItemRepository;
 import com.hinderegger.steaminventorytracker.service.strategy.AsyncSteamRequestStrategy;
 import com.hinderegger.steaminventorytracker.service.strategy.SteamRequestStrategy;
 import com.hinderegger.steaminventorytracker.service.strategy.SyncSteamRequestStrategy;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-
-import java.util.List;
 
 /**
  * Service for tracking Steam inventory items and their prices.
@@ -19,7 +17,7 @@ import java.util.List;
 @Slf4j
 @RequiredArgsConstructor
 public class SteamInventoryTrackerService {
-  private final ItemRepository itemRepository;
+  private final ItemService itemService;
   private final AsyncSteamRequestStrategy asyncStrategy;
   private final SyncSteamRequestStrategy syncStrategy;
 
@@ -29,7 +27,7 @@ public class SteamInventoryTrackerService {
    */
   public void requestItems() {
     log.info("Starting asynchronous Steam Market request");
-    final List<Item> allItems = itemRepository.findAll();
+    final List<Item> allItems = itemService.getAllItems();
     asyncStrategy.requestItems(allItems);
   }
 
@@ -39,7 +37,7 @@ public class SteamInventoryTrackerService {
    */
   public void requestItemsSync() {
     log.info("Starting synchronous Steam Market request");
-    final List<Item> allItems = itemRepository.findAll();
+    final List<Item> allItems = itemService.getAllItems();
     syncStrategy.requestItems(allItems);
   }
 
@@ -50,7 +48,7 @@ public class SteamInventoryTrackerService {
    */
   public void requestItemsWithStrategy(SteamRequestStrategy strategy) {
     log.info("Starting Steam Market request with custom strategy");
-    final List<Item> allItems = itemRepository.findAll();
+    final List<Item> allItems = itemService.getAllItems();
     strategy.requestItems(allItems);
   }
 }

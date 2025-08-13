@@ -2,9 +2,6 @@ package com.hinderegger.steaminventorytracker.model;
 
 import java.util.List;
 import lombok.Data;
-import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.index.Indexed;
-import org.springframework.data.mongodb.core.mapping.Document;
 
 /**
  * Represents an item in the Steam inventory.
@@ -12,9 +9,8 @@ import org.springframework.data.mongodb.core.mapping.Document;
  * Business logic has been moved to appropriate service classes.
  */
 @Data
-@Document
 public class Item {
-  @Id @Indexed private final String itemName;
+  private final String itemName;
   private final List<Price> priceHistory;
 
   /**
