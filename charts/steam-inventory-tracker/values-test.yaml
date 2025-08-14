@@ -1,5 +1,5 @@
 image:
-  tag: sha-${ARGOCD_APP_REVISION_SHORT}
+  tag: "sha-${ARGOCD_APP_REVISION_SHORT}"
 
 ingress:
   enabled: true
@@ -12,7 +12,7 @@ ingress:
         - path: /
           pathType: ImplementationSpecific
   tls:
-    - secretName: tls-sit
+    - secretName: sit.test.ouranix.dev-tls
       hosts:
         - sit.test.ouranix.dev
 sit:
