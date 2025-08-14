@@ -20,6 +20,8 @@ sit:
     url: jdbc:postgresql://dev-cluster.postgres:5432/sit
     username: situser
     password: ""
+  scheduler:
+    request: "-"  # disabled
 
 postgresql:
   enabled: false
