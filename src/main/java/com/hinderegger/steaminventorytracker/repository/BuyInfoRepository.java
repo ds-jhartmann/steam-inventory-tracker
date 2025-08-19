@@ -1,4 +1,4 @@
-package com.hinderegger.steaminventorytracker.repository.jpa;
+package com.hinderegger.steaminventorytracker.repository;
 
 import com.hinderegger.steaminventorytracker.persistence.BuyInfoEntity;
 import java.util.List;

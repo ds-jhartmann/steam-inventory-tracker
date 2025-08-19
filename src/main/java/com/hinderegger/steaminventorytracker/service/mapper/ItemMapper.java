@@ -4,7 +4,7 @@ import com.hinderegger.steaminventorytracker.model.Item;
 import com.hinderegger.steaminventorytracker.model.Price;
 import com.hinderegger.steaminventorytracker.persistence.ItemEntity;
 import com.hinderegger.steaminventorytracker.persistence.PriceEntity;
-import com.hinderegger.steaminventorytracker.repository.jpa.ItemRepository;
+import com.hinderegger.steaminventorytracker.repository.ItemRepository;
 
 import java.util.ArrayList;
 import java.util.List;

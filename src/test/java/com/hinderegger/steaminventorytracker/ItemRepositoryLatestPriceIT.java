@@ -13,7 +13,7 @@ import java.util.stream.Collectors;
 
 import com.hinderegger.steaminventorytracker.persistence.ItemEntity;
 import com.hinderegger.steaminventorytracker.persistence.PriceEntity;
-import com.hinderegger.steaminventorytracker.repository.jpa.ItemRepository;
+import com.hinderegger.steaminventorytracker.repository.ItemRepository;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

@@ -6,8 +6,8 @@ import static org.mockito.Mockito.mock;
 
 import com.hinderegger.steaminventorytracker.model.Item;
 import com.hinderegger.steaminventorytracker.model.Price;
-import com.hinderegger.steaminventorytracker.repository.jpa.ItemRepository;
-import com.hinderegger.steaminventorytracker.repository.jpa.PriceRepository;
+import com.hinderegger.steaminventorytracker.repository.ItemRepository;
+import com.hinderegger.steaminventorytracker.repository.PriceRepository;
 import java.time.LocalDateTime;
 import java.util.List;
 import org.junit.jupiter.api.AfterEach;

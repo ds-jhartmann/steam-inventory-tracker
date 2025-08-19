@@ -2,7 +2,7 @@ package com.hinderegger.steaminventorytracker.service;
 
 import com.hinderegger.steaminventorytracker.model.BuyInfo;
 import com.hinderegger.steaminventorytracker.persistence.BuyInfoEntity;
-import com.hinderegger.steaminventorytracker.repository.jpa.BuyInfoRepository;
+import com.hinderegger.steaminventorytracker.repository.BuyInfoRepository;
 import java.util.List;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;

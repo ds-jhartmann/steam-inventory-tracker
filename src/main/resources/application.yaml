@@ -20,10 +20,15 @@ scheduler:
   #        │ │  │  │ │ │          (or MON-SUN -- 0 or 7 is Sunday)
   #        │ │  │  │ │ │
   request: 0 0 */3 * * * # every 3 hours
+
 spring:
   application:
     name: steam-inventory-tracker
   datasource:
+    hikari:
+      data-source-properties:
+        # JDBC driver hint for Postgres
+        rewriteBatchedInserts: true
     url: jdbc:postgresql://localhost:5432/steam
     username: steam
     password: steam
@@ -31,6 +36,11 @@ spring:
     hibernate:
       ddl-auto: validate
     properties:
+      hibernate:
+        order_updates: true
+        order_inserts: true
+        jdbc:
+          batch_size: 200
       hibernate.jdbc.time_zone: UTC
   flyway:
     enabled: true
