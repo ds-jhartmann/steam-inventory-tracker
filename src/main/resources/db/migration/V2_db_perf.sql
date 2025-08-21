@@ -15,28 +15,16 @@ END IF;
 END $$;
 
 -- 2) Main covering index for "latest price per item"
--- Use INCLUDE if Postgres >= 11, else fall back to a plain composite index.
 DO $$
 BEGIN
-  IF current_setting('server_version_num')::int >= 110000 THEN
-    -- Covering index enables index-only scans to fetch price/median without heap lookups
-    IF NOT EXISTS (
-      SELECT 1 FROM pg_class c JOIN pg_namespace n ON n.oid = c.relnamespace
-      WHERE c.relname = 'ix_price_item_ts_desc_inc' AND n.nspname = 'public'
-    ) THEN
-      EXECUTE 'CREATE INDEX ix_price_item_ts_desc_inc
-               ON price_history (item_name, timestamp DESC)
-               INCLUDE (price, median)';
-END IF;
-ELSE
-    -- Fallback composite index (no INCLUDE support pre-Postgres 11)
-    IF NOT EXISTS (
-      SELECT 1 FROM pg_class c JOIN pg_namespace n ON n.oid = c.relnamespace
-      WHERE c.relname = 'ix_price_item_ts_desc' AND n.nspname = 'public'
-    ) THEN
-      EXECUTE 'CREATE INDEX ix_price_item_ts_desc
-               ON price_history (item_name, timestamp DESC)';
-END IF;
+  -- Covering index enables index-only scans to fetch price/median without heap lookups
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_class c JOIN pg_namespace n ON n.oid = c.relnamespace
+    WHERE c.relname = 'ix_price_item_ts_desc_inc' AND n.nspname = 'public'
+  ) THEN
+    EXECUTE 'CREATE INDEX ix_price_item_ts_desc_inc
+             ON price_history (item_name, timestamp DESC)
+             INCLUDE (price, median)';
 END IF;
 END $$;
 
