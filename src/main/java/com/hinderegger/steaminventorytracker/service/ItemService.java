@@ -3,7 +3,11 @@ package com.hinderegger.steaminventorytracker.service;
 import com.hinderegger.steaminventorytracker.model.Item;
 import com.hinderegger.steaminventorytracker.model.Price;
 import com.hinderegger.steaminventorytracker.model.PriceTrend;
+import com.hinderegger.steaminventorytracker.persistence.ItemEntity;
+import com.hinderegger.steaminventorytracker.persistence.PriceEntity;
 import com.hinderegger.steaminventorytracker.repository.ItemRepository;
+import com.hinderegger.steaminventorytracker.repository.PriceRepository;
+import com.hinderegger.steaminventorytracker.service.mapper.ItemMapper;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Optional;
@@ -11,23 +15,32 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 /** Service for managing Item entities. */
 @Service
 @AllArgsConstructor
 @Slf4j
+@Transactional
 public class ItemService {
 
   private final ItemRepository itemRepository;
   private final TimeProvider timeProvider;
   private final PriceService priceService;
+  private final PriceRepository priceRepository;
 
   public Item addItem(final Item item) {
     final String itemName = item.getItemName();
     if (itemRepository.findById(itemName).isEmpty()) {
       log.info("Adding Item '{}'.", itemName);
-      return itemRepository.insert(item);
+      ItemEntity e = new ItemEntity(itemName);
+      if (item.getPriceHistory() != null) {
+        for (var p : item.getPriceHistory()) {
+          e.getPriceHistory().add(new PriceEntity(e, p.price(), p.median(), p.timestamp()));
+        }
+      }
+      return ItemMapper.toModel(itemRepository.save(e));
     } else {
       log.info("Item '{}' already present.", itemName);
       throw new ResponseStatusException(
@@ -41,16 +54,17 @@ public class ItemService {
   }
 
   public List<Item> addItems(final List<Item> items) {
-    return itemRepository.insert(items);
+    return itemRepository.saveAll(items.stream().map(ItemMapper::toEntity).toList()).stream()
+        .map(ItemMapper::toModel)
+        .toList();
   }
 
-  public Item updatePriceForItem(final String name, final double price, final double median) {
-    final Optional<Item> itemByName = itemRepository.findById(name);
+  public Price updatePriceForItem(final String name, final double price, final double median) {
+    final Optional<ItemEntity> itemByName = itemRepository.findById(name);
     if (itemByName.isPresent()) {
-      final Price price1 = new Price(price, median, timeProvider.now());
-      final Item item = itemByName.get();
-      item.addPrice(price1);
-      return itemRepository.save(item);
+      var entity = itemByName.get();
+      PriceEntity newPrice = new PriceEntity(entity, price, median, timeProvider.now());
+      return ItemMapper.toModel(priceRepository.save(newPrice));
     } else {
       throw new ResponseStatusException(
           HttpStatus.NOT_FOUND, "Item '" + name + "' does not exist.");
@@ -58,22 +72,22 @@ public class ItemService {
   }
 
   public Item getItemByName(final String name) {
-    final Optional<Item> itemByName = itemRepository.findById(name);
-    return itemByName.orElseThrow(
-        () ->
-            new ResponseStatusException(
-                HttpStatus.NOT_FOUND, "Item '" + name + "' does not exist."));
+    return itemRepository
+        .findById(name)
+        .map(ItemMapper::toModel)
+        .orElseThrow(
+            () ->
+                new ResponseStatusException(
+                    HttpStatus.NOT_FOUND, "Item '" + name + "' does not exist."));
   }
 
   public List<Item> getAllItems() {
-    return itemRepository.findAll();
+    return itemRepository.findAll().stream().map(ItemMapper::toModel).toList();
   }
 
-  /**
-   * Returns all items with their latest price only (DB-side projection), for efficient export.
-   */
+  /** Returns all items with their latest price only (DB-side projection), for efficient export. */
   public List<Item> getAllItemsWithLatestPrice() {
-    return itemRepository.findAllWithLatestPrice();
+    return itemRepository.findAllWithLatestPrice().stream().map(ItemMapper::toModel).toList();
   }
 
   /**

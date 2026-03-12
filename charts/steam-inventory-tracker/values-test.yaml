@@ -1,0 +1,27 @@
+image:
+  tag: "sha-${ARGOCD_APP_REVISION_SHORT}"
+
+ingress:
+  enabled: true
+  className: "nginx"
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+  hosts:
+    - host: sit.test.ouranix.dev
+      paths:
+        - path: /
+          pathType: ImplementationSpecific
+  tls:
+    - secretName: sit.test.ouranix.dev-tls
+      hosts:
+        - sit.test.ouranix.dev
+sit:
+  datasource:
+    url: jdbc:postgresql://dev-cluster.postgres:5432/sit
+    username: situser
+    password: ""
+  scheduler:
+    request: "-"  # disabled
+
+postgresql:
+  enabled: false

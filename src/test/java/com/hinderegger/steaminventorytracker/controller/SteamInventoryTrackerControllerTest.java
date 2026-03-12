@@ -40,6 +40,7 @@ class SteamInventoryTrackerControllerTest {
   private SteamInventoryTrackerController controller;
 
   private Item testItem;
+  private Price testPrice;
   private BuyInfo testBuyInfo;
   private List<Price> testPriceHistory;
   private PriceTrend testPriceTrend;
@@ -60,7 +61,8 @@ class SteamInventoryTrackerControllerTest {
 
     // Set up test data
     testPriceHistory = new ArrayList<>();
-    testPriceHistory.add(new Price(10.0, 11.0, LocalDateTime.now()));
+    testPrice = new Price(10.0, 11.0, LocalDateTime.now());
+    testPriceHistory.add(testPrice);
     testItem = new Item("Test Item", testPriceHistory);
     testBuyInfo = new BuyInfo("Test Item", 5, 9.99);
     testPriceTrend = new PriceTrend(1.0, 0.1, 1.5, 0.15);
@@ -135,14 +137,14 @@ class SteamInventoryTrackerControllerTest {
   void shouldUpdatePrice() {
     // Arrange
     when(itemService.updatePriceForItem(anyString(), anyDouble(), anyDouble()))
-        .thenReturn(testItem);
+        .thenReturn(testPrice);
 
     // Act
-    ResponseEntity<Item> response = controller.updatePrice("Test Item", 10.0, 11.0);
+    ResponseEntity<Price> response = controller.updatePrice("Test Item", 10.0, 11.0);
 
     // Assert
     assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-    assertThat(response.getBody()).isEqualTo(testItem);
+    assertThat(response.getBody()).isEqualTo(testPrice);
     verify(itemService, times(1)).updatePriceForItem("Test Item", 10.0, 11.0);
   }
 

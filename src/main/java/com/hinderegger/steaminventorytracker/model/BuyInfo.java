@@ -1,13 +1,10 @@
 package com.hinderegger.steaminventorytracker.model;
 
 import lombok.Data;
-import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.mapping.Document;
 
 @Data
-@Document
 public class BuyInfo {
-  @Id private String id;
+  private String id;
   private String itemName;
   private int amount;
   private double buyPrice;

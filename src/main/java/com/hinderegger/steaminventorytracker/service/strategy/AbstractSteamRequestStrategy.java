@@ -1,8 +1,7 @@
 package com.hinderegger.steaminventorytracker.service.strategy;
 
 import com.hinderegger.steaminventorytracker.model.Item;
-import com.hinderegger.steaminventorytracker.model.Price;
-import com.hinderegger.steaminventorytracker.repository.ItemRepository;
+import com.hinderegger.steaminventorytracker.service.ItemService;
 import com.hinderegger.steaminventorytracker.service.TimeProvider;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -19,7 +18,7 @@ public abstract class AbstractSteamRequestStrategy implements SteamRequestStrate
 
   public static final String MEDIAN_PRICE_KEY = "median_price";
   public static final String LOWEST_PRICE_KEY = "lowest_price";
-  protected final ItemRepository itemRepository;
+  protected final ItemService itemService;
   protected final TimeProvider timeProvider;
 
   @Override
@@ -43,10 +42,8 @@ public abstract class AbstractSteamRequestStrategy implements SteamRequestStrate
       }
 
       if (lowestPrice > 0.0) {
-        final Price price = new Price(lowestPrice, medianPrice, timeProvider.now());
-        log.info("Adding price {} to item {}", price, item.getItemName());
-        item.addPrice(price);
-        itemRepository.save(item);
+        log.info("Updating price for {}: lowest={}, median={}", item.getItemName(), lowestPrice, medianPrice);
+        itemService.updatePriceForItem(item.getItemName(), lowestPrice, medianPrice);
       } else {
         log.error("No lowest_price found. Skipping Item: {}", item.getItemName());
       }

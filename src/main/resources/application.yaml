@@ -20,14 +20,30 @@ scheduler:
   #        │ │  │  │ │ │          (or MON-SUN -- 0 or 7 is Sunday)
   #        │ │  │  │ │ │
   request: 0 0 */3 * * * # every 3 hours
+
 spring:
   application:
     name: steam-inventory-tracker
-  data:
-    mongodb:
-      database: steam-inventory-tracker
-      auto-index-creation: true
-      uri: mongodb://localhost/test
+  datasource:
+    hikari:
+      data-source-properties:
+        # JDBC driver hint for Postgres
+        rewriteBatchedInserts: true
+    url: jdbc:postgresql://localhost:5432/steam
+    username: steam
+    password: steam
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        order_updates: true
+        order_inserts: true
+        jdbc:
+          batch_size: 200
+      hibernate.jdbc.time_zone: UTC
+  flyway:
+    enabled: true
 
 management: # Spring management API config, see https://spring.io/guides/gs/centralized-configuration/
   endpoints:
@@ -40,7 +56,7 @@ management: # Spring management API config, see https://spring.io/guides/gs/cent
         enabled: true
       group:
         readiness:
-          include: ping, mongo
+          include: ping
         liveness:
           include: ping
   health:

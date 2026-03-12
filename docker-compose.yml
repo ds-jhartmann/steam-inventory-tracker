@@ -1,36 +1,24 @@
-version: "3.8"
-
 services:
-  mongo:
-    image: mongo
-    container_name: mongodb
-    restart: always
-    ports:
-      - "27017:27017"
-    volumes:
-      - ./data:/data
+  postgres:
+    image: postgres:17-alpine
+    container_name: postgres_db
+    restart: unless-stopped
     environment:
-      MONGO_INITDB_ROOT_USERNAME: rootuser
-      MONGO_INITDB_ROOT_PASSWORD: rootpass
-
-  mongo-express:
-    image: mongo-express
-    container_name: mongo-express
-    restart: always
+      POSTGRES_USER: steam
+      POSTGRES_PASSWORD: steam
+      POSTGRES_DB: steam
     ports:
-      - "8081:8081"
-    environment:
-      ME_CONFIG_MONGODB_ADMINUSERNAME: rootuser
-      ME_CONFIG_MONGODB_ADMINPASSWORD: rootpass
-      ME_CONFIG_MONGODB_SERVER: mongodb
+      - "5432:5432"
 
   steam-inventory-tracker:
-    image: jhrtmnn/steam-inventory-tracker:main
+    image: jhrtmnn/steam-inventory-tracker:local
     container_name: steam-inventory-tracker
     restart: always
     ports:
       - "8080:8080"
     environment:
-      SPRING_DATA_MONGODB_HOST: "mongodb"
+      SPRING_DATASOURCE_URL: "jdbc:postgresql://postgres:5432/steam"
+      SPRING_DATASOURCE_USERNAME: "steam"
+      SPRING_DATASOURCE_PASSWORD: "steam"
     depends_on:
-      - mongo
+      - postgres

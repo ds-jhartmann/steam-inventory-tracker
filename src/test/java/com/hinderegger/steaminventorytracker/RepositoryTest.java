@@ -4,86 +4,91 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
+import com.hinderegger.steaminventorytracker.configuration.SteamConfiguration;
 import com.hinderegger.steaminventorytracker.model.Item;
-import com.hinderegger.steaminventorytracker.model.Price;
+import com.hinderegger.steaminventorytracker.persistence.ItemEntity;
+import com.hinderegger.steaminventorytracker.persistence.PriceEntity;
 import com.hinderegger.steaminventorytracker.repository.ItemRepository;
-import com.hinderegger.steaminventorytracker.service.SteamInventoryTrackerService;
+import com.hinderegger.steaminventorytracker.repository.PriceRepository;
+import com.hinderegger.steaminventorytracker.service.*;
+import com.hinderegger.steaminventorytracker.service.mapper.ItemMapper;
 import com.hinderegger.steaminventorytracker.service.strategy.AsyncSteamRequestStrategy;
-import com.hinderegger.steaminventorytracker.service.strategy.SteamRequestStrategy;
+import com.hinderegger.steaminventorytracker.service.strategy.SteamApiQueryException;
 import com.hinderegger.steaminventorytracker.service.strategy.SyncSteamRequestStrategy;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.data.mongo.DataMongoTest;
-import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
+import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.test.context.ContextConfiguration;
 import org.testcontainers.junit.jupiter.Testcontainers;
+import reactor.core.publisher.Mono;
 
 /**
- * Integration test for the SteamInventoryTrackerService with MongoDB. This test uses the Strategy
- * pattern to test both synchronous and asynchronous item requests.
+ * Integration test for the SteamInventoryTrackerService with PostgreSQL. This test uses the
+ * Strategy pattern to test both synchronous and asynchronous item requests.
  */
-@DataMongoTest
+@DataJpaTest
 @Testcontainers
-@ContextConfiguration(classes = MongoDBTestContainerConfig.class)
+@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
+@ContextConfiguration(initializers = PostgresTestContainerConfig.class)
 class RepositoryTest {
 
-  @Autowired MongoTemplate mongoTemplate;
+  public static final Item ITEM_1 = new Item("Test 1", List.of());
+  public static final Item ITEM_2 = new Item("Test 2", List.of());
   @Autowired private ItemRepository itemRepository;
+  @Autowired private PriceRepository priceRepository;
 
   private SteamInventoryTrackerService testee;
   private AsyncSteamRequestStrategy asyncStrategy;
   private SyncSteamRequestStrategy syncStrategy;
+  private ItemService itemService;
 
   @BeforeEach
-  void setUp() {
-    // Create mock strategies
-    asyncStrategy = mock(AsyncSteamRequestStrategy.class);
-    syncStrategy = mock(SyncSteamRequestStrategy.class);
+  void setUp() throws SteamApiQueryException, InterruptedException {
 
-    // Configure the strategies to update items when requestItems is called
-    doAnswer(
-            invocation -> {
-              List<Item> items = invocation.getArgument(0);
-              // Process each item - in a real scenario, this would call the Steam API
-              for (Item item : items) {
-                // Add a test price to each item
-                if (item.getItemName().equals("Test 1")) {
-                  item.addPrice(new Price(5.79, 5.61, LocalDateTime.now()));
-                } else if (item.getItemName().equals("Test 2")) {
-                  item.addPrice(new Price(0.99, 0.65, LocalDateTime.now()));
+    final String dataItem1 =
+        """
+                {
+                    "success": true,
+                    "lowest_price": "5,79€",
+                    "volume": "1,684",
+                    "median_price": "5,61€"
                 }
-                // Save the updated item
-                itemRepository.save(item);
-              }
-              return null;
-            })
-        .when(asyncStrategy)
-        .requestItems(any());
-
-    // Configure the sync strategy similarly
-    doAnswer(
-            invocation -> {
-              List<Item> items = invocation.getArgument(0);
-              for (Item item : items) {
-                if (item.getItemName().equals("Test 1")) {
-                  item.addPrice(new Price(5.79, 5.61, LocalDateTime.now()));
-                } else if (item.getItemName().equals("Test 2")) {
-                  item.addPrice(new Price(0.99, 0.65, LocalDateTime.now()));
+                """;
+    final String dataItem2 =
+        """
+                {
+                    "success": true,
+                    "lowest_price": "0,99€",
+                    "volume": "1,684",
+                    "median_price": "0,65"
                 }
-                itemRepository.save(item);
-              }
-              return null;
-            })
-        .when(syncStrategy)
-        .requestItems(any());
+                """;
+    var mockSteamClient = mock(SteamMarketAPIClient.class);
+    when(mockSteamClient.getPriceForItem(eq(ITEM_1))).thenReturn(Mono.just(dataItem1));
+    when(mockSteamClient.getPriceForItem(eq(ITEM_2))).thenReturn(Mono.just(dataItem2));
 
-    // Create the service with mock strategies
-    testee = new SteamInventoryTrackerService(itemRepository, asyncStrategy, syncStrategy);
+    var mockSteamHttpClient = mock(SteamMarketHttpClient.class);
+    when(mockSteamHttpClient.getStringHttpResponse(eq(ITEM_1))).thenReturn(dataItem1);
+    when(mockSteamHttpClient.getStringHttpResponse(eq(ITEM_2))).thenReturn(dataItem2);
+
+    var steamConfig = mock(SteamConfiguration.class);
+    when(steamConfig.getSleepDuration()).thenReturn(0);
+
+    var timeProvider = new DefaultTimeProvider();
+    var priceService = new PriceService();
+
+    itemService = new ItemService(itemRepository, timeProvider, priceService, priceRepository);
+    asyncStrategy = spy(new AsyncSteamRequestStrategy(mockSteamClient, itemService, timeProvider));
+    syncStrategy =
+        spy(
+            new SyncSteamRequestStrategy(
+                steamConfig, timeProvider, itemService, mockSteamHttpClient));
+    testee = new SteamInventoryTrackerService(itemService, asyncStrategy, syncStrategy);
   }
 
   @AfterEach
@@ -96,18 +101,21 @@ class RepositoryTest {
   @Test
   void shouldRequestItemAsync() {
     // Arrange
-    mongoTemplate.insert(new Item("Test 1", List.of()));
+    final Item item = new Item("Test 1", List.of());
+    itemService.addItem(item);
 
     // Act
     testee.requestItems();
 
     // Assert
-    List<Item> items = itemRepository.findAll();
+    List<ItemEntity> items = itemRepository.findAll();
     assertThat(items).hasSize(1);
     assertThat(items.getFirst().getItemName()).isEqualTo("Test 1");
-    assertThat(items.getFirst().getPriceHistory()).isNotEmpty();
-    assertThat(items.getFirst().getPriceHistory().getFirst().price()).isEqualTo(5.79);
-    assertThat(items.getFirst().getPriceHistory().getFirst().median()).isEqualTo(5.61);
+    final List<PriceEntity> allByItemEntity = priceRepository.findAllByItem(items.getFirst());
+    assertThat(allByItemEntity).isNotEmpty();
+    assertThat(allByItemEntity.getFirst().getPrice()).isEqualTo(5.79);
+    assertThat(allByItemEntity.getFirst().getMedian()).isEqualTo(5.61);
+
     verify(asyncStrategy, times(1)).requestItems(any());
     verifyNoInteractions(syncStrategy);
   }
@@ -117,17 +125,17 @@ class RepositoryTest {
     // Arrange
     Item item1 = new Item("Test 1", List.of());
     Item item2 = new Item("Test 2", List.of());
-    mongoTemplate.insert(item1);
-    mongoTemplate.insert(item2);
+    itemService.addItem(item1);
+    itemService.addItem(item2);
 
     // Act
     testee.requestItems();
 
     // Assert
-    List<Item> items = itemRepository.findAll();
+    List<ItemEntity> items = itemRepository.findAll();
     assertThat(items).hasSize(2);
-    Optional<Item> storedItem1 = itemRepository.findById("Test 1");
-    Optional<Item> storedItem2 = itemRepository.findById("Test 2");
+    Optional<Item> storedItem1 = itemRepository.findById("Test 1").map(ItemMapper::toModel);
+    Optional<Item> storedItem2 = itemRepository.findById("Test 2").map(ItemMapper::toModel);
     assertThat(storedItem1).isPresent();
     assertThat(storedItem2).isPresent();
 
@@ -139,58 +147,22 @@ class RepositoryTest {
   @Test
   void shouldRequestItemSync() {
     // Arrange
-    Item item1 = new Item("Test 1", List.of());
-    Item item2 = new Item("Test 2", List.of());
-    mongoTemplate.insert(item1);
-    mongoTemplate.insert(item2);
+    itemRepository.save(ItemMapper.toEntity(ITEM_1));
+    itemRepository.save(ItemMapper.toEntity(ITEM_2));
 
     // Act
     testee.requestItemsSync();
 
     // Assert
-    List<Item> items = itemRepository.findAll();
+    List<ItemEntity> items = itemRepository.findAll();
     assertThat(items).hasSize(2);
-    Optional<Item> storedItem1 = itemRepository.findById("Test 1");
-    Optional<Item> storedItem2 = itemRepository.findById("Test 2");
+    Optional<ItemEntity> storedItem1 = itemRepository.findById("Test 1");
+    Optional<ItemEntity> storedItem2 = itemRepository.findById("Test 2");
     assertThat(storedItem1).isPresent();
     assertThat(storedItem2).isPresent();
 
     // Verify the correct strategy was used
     verify(syncStrategy, times(1)).requestItems(any());
     verifyNoInteractions(asyncStrategy);
-  }
-
-  @Test
-  void shouldUseCustomStrategy() {
-    // Arrange
-    Item item = new Item("Test 1", List.of());
-    mongoTemplate.insert(item);
-
-    // Create a custom strategy
-    SteamRequestStrategy customStrategy = mock(SteamRequestStrategy.class);
-    doAnswer(
-            invocation -> {
-              List<Item> items = invocation.getArgument(0);
-              for (Item i : items) {
-                i.addPrice(new Price(9.99, 9.99, LocalDateTime.now()));
-                itemRepository.save(i);
-              }
-              return null;
-            })
-        .when(customStrategy)
-        .requestItems(any());
-
-    // Act
-    testee.requestItemsWithStrategy(customStrategy);
-
-    // Assert
-    Item updatedItem = itemRepository.findById("Test 1").orElseThrow();
-    assertThat(updatedItem.getPriceHistory()).isNotEmpty();
-    assertThat(updatedItem.getPriceHistory().getFirst().price()).isEqualTo(9.99);
-
-    // Verify the correct strategy was used
-    verify(customStrategy, times(1)).requestItems(any());
-    verifyNoInteractions(asyncStrategy);
-    verifyNoInteractions(syncStrategy);
   }
 }

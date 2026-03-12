@@ -1,10 +1,10 @@
 package com.hinderegger.steaminventorytracker.repository;
 
-import com.hinderegger.steaminventorytracker.model.BuyInfo;
+import com.hinderegger.steaminventorytracker.persistence.BuyInfoEntity;
 import java.util.List;
-import org.springframework.data.mongodb.repository.MongoRepository;
+import java.util.UUID;
+import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface BuyInfoRepository extends MongoRepository<BuyInfo, String> {
-
-  List<BuyInfo> findAllByItemName(String itemName);
+public interface BuyInfoRepository extends JpaRepository<BuyInfoEntity, UUID> {
+  List<BuyInfoEntity> findAllByItemName(String itemName);
 }

@@ -1,7 +1,7 @@
 package com.hinderegger.steaminventorytracker.service.strategy;
 
 import com.hinderegger.steaminventorytracker.model.Item;
-import com.hinderegger.steaminventorytracker.repository.ItemRepository;
+import com.hinderegger.steaminventorytracker.service.ItemService;
 import com.hinderegger.steaminventorytracker.service.SteamMarketAPIClient;
 import com.hinderegger.steaminventorytracker.service.TimeProvider;
 import java.util.Collections;
@@ -23,9 +23,9 @@ public class AsyncSteamRequestStrategy extends AbstractSteamRequestStrategy {
 
   public AsyncSteamRequestStrategy(
       SteamMarketAPIClient steamMarketAPIClient,
-      ItemRepository itemRepository,
+      ItemService itemService,
       TimeProvider timeProvider) {
-    super(itemRepository, timeProvider);
+    super(itemService, timeProvider);
     this.steamMarketAPIClient = steamMarketAPIClient;
   }
 

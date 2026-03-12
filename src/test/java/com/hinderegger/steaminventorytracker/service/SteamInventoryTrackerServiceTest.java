@@ -4,7 +4,6 @@ import static org.mockito.Mockito.*;
 
 import com.hinderegger.steaminventorytracker.model.Item;
 import com.hinderegger.steaminventorytracker.model.Price;
-import com.hinderegger.steaminventorytracker.repository.ItemRepository;
 import com.hinderegger.steaminventorytracker.service.strategy.AsyncSteamRequestStrategy;
 import com.hinderegger.steaminventorytracker.service.strategy.SteamRequestStrategy;
 import com.hinderegger.steaminventorytracker.service.strategy.SyncSteamRequestStrategy;
@@ -21,7 +20,7 @@ import org.junit.jupiter.api.Test;
 class SteamInventoryTrackerServiceTest {
 
   private SteamInventoryTrackerService service;
-  private ItemRepository itemRepository;
+  private ItemService itemService;
   private AsyncSteamRequestStrategy asyncStrategy;
   private SyncSteamRequestStrategy syncStrategy;
   private List<Item> testItems;
@@ -29,12 +28,12 @@ class SteamInventoryTrackerServiceTest {
   @BeforeEach
   void setUp() {
     // Create mocks
-    itemRepository = mock(ItemRepository.class);
+    itemService = mock(ItemService.class);
     asyncStrategy = mock(AsyncSteamRequestStrategy.class);
     syncStrategy = mock(SyncSteamRequestStrategy.class);
 
     // Create the service with mocks
-    service = new SteamInventoryTrackerService(itemRepository, asyncStrategy, syncStrategy);
+    service = new SteamInventoryTrackerService(itemService, asyncStrategy, syncStrategy);
 
     // Set up test data
     Price price = new Price(0.1, 0.11, LocalDateTime.of(2023, 12, 20, 15, 0, 0));
@@ -43,7 +42,7 @@ class SteamInventoryTrackerServiceTest {
     testItems = new ArrayList<>(List.of(item, item));
 
     // Configure mock behavior
-    when(itemRepository.findAll()).thenReturn(testItems);
+    when(itemService.getAllItems()).thenReturn(testItems);
   }
 
   @Test
@@ -52,7 +51,7 @@ class SteamInventoryTrackerServiceTest {
     service.requestItems();
 
     // Assert
-    verify(itemRepository).findAll();
+    verify(itemService).getAllItems();
     verify(asyncStrategy).requestItems(testItems);
     verifyNoInteractions(syncStrategy);
   }
@@ -63,7 +62,7 @@ class SteamInventoryTrackerServiceTest {
     service.requestItemsSync();
 
     // Assert
-    verify(itemRepository).findAll();
+    verify(itemService).getAllItems();
     verify(syncStrategy).requestItems(testItems);
     verifyNoInteractions(asyncStrategy);
   }
@@ -77,7 +76,7 @@ class SteamInventoryTrackerServiceTest {
     service.requestItemsWithStrategy(customStrategy);
 
     // Assert
-    verify(itemRepository).findAll();
+    verify(itemService).getAllItems();
     verify(customStrategy).requestItems(testItems);
     verifyNoInteractions(asyncStrategy);
     verifyNoInteractions(syncStrategy);

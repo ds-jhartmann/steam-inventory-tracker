@@ -41,13 +41,15 @@ spec:
               containerPort: {{ .Values.service.actuatorPort }}
               protocol: TCP
           env:
-            - name: SPRING_DATA_MONGODB_URI
+            - name: SPRING_DATASOURCE_URL
+              value: {{ tpl .Values.sit.datasource.url . | quote }}
+            - name: SPRING_DATASOURCE_USERNAME
+              value: {{ tpl .Values.sit.datasource.username . | quote }}
+            - name: SPRING_DATASOURCE_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: {{ include "steam-inventory-tracker.mongodb.secretName" . }}
-                  key: mongodb-uri
-            - name: SPRING_DATA_MONGODB_DATABASE
-              value: {{ .Values.sit.mongodb.database | quote }}
+                  name: {{ include "steam-inventory-tracker.db.secretName" . }}
+                  key: password
             - name: SCHEDULER_REQUEST
               value: {{ .Values.sit.scheduler.request | default "0 0 */3 * * *" | quote }}
           livenessProbe:
