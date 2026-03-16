@@ -80,7 +80,7 @@ public class PriceService {
       throw new PriceHistoryException(message);
     }
 
-    if (timespan == 7 && actualTimeDifference > timespan) {
+    if (timespan == 7 && actualTimeDifference < timespan) {
       throw new PriceHistoryException(message);
     }
 
